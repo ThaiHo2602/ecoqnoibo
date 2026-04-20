@@ -12,8 +12,6 @@ $furnitureLabels = [
     'co_noi_that' => 'Có nội thất',
     'khong_noi_that' => 'Không nội thất',
 ];
-$baseQuery = $_GET;
-unset($baseQuery['page']);
 ?>
 
 <section class="listing-hero">
@@ -125,43 +123,3 @@ unset($baseQuery['page']);
         </a>
     <?php endforeach; ?>
 </section>
-
-<?php if (($pagination['total_pages'] ?? 1) > 1): ?>
-    <section class="panel-card listing-pagination-panel">
-        <div class="listing-pagination-summary">
-            Đang hiển thị <strong><?= e((string) $pagination['from']) ?></strong> - <strong><?= e((string) $pagination['to']) ?></strong>
-            trên tổng <strong><?= e((string) $pagination['total_items']) ?></strong> phòng phù hợp.
-        </div>
-
-        <nav aria-label="Phân trang danh sách phòng">
-            <ul class="pagination listing-pagination mb-0">
-                <?php
-                $previousPage = max(1, $pagination['current_page'] - 1);
-                $nextPage = min($pagination['total_pages'], $pagination['current_page'] + 1);
-                $startPage = max(1, $pagination['current_page'] - 2);
-                $endPage = min($pagination['total_pages'], $pagination['current_page'] + 2);
-                ?>
-
-                <li class="page-item <?= $pagination['current_page'] <= 1 ? 'disabled' : '' ?>">
-                    <a class="page-link" href="<?= e(url('/?' . http_build_query($baseQuery + ['page' => $previousPage]))) ?>">Trước</a>
-                </li>
-
-                <?php for ($page = $startPage; $page <= $endPage; $page++): ?>
-                    <li class="page-item <?= $page === $pagination['current_page'] ? 'active' : '' ?>">
-                        <a class="page-link" href="<?= e(url('/?' . http_build_query($baseQuery + ['page' => $page]))) ?>"><?= e((string) $page) ?></a>
-                    </li>
-                <?php endfor; ?>
-
-                <li class="page-item <?= $pagination['current_page'] >= $pagination['total_pages'] ? 'disabled' : '' ?>">
-                    <a class="page-link" href="<?= e(url('/?' . http_build_query($baseQuery + ['page' => $nextPage]))) ?>">Sau</a>
-                </li>
-            </ul>
-        </nav>
-    </section>
-<?php elseif (($pagination['total_items'] ?? 0) > 0): ?>
-    <section class="panel-card listing-pagination-panel">
-        <div class="listing-pagination-summary mb-0">
-            Hiển thị toàn bộ <strong><?= e((string) $pagination['total_items']) ?></strong> phòng phù hợp trong một trang.
-        </div>
-    </section>
-<?php endif; ?>

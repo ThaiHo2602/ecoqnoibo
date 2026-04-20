@@ -15,17 +15,22 @@ class RoomController
 
         $connection = Database::connection();
         $filters = $this->roomFilters();
-        $perPage = 30;
-        $totalRooms = $this->countRooms($filters);
-        $totalPages = max(1, (int) ceil($totalRooms / $perPage));
-        $currentPage = max(1, min((int) query('page', 1), $totalPages));
-        $offset = ($currentPage - 1) * $perPage;
-
-        $rooms = $this->fetchRooms($filters, $perPage, $offset);
+        $rooms = $this->fetchRooms($filters);
         $roomIds = array_map(static fn (array $room): int => (int) $room['id'], $rooms);
 
         $roomMediaMap = $this->roomMediaMap($roomIds);
-        $roomStats = $this->countRoomStats($filters);
+        $roomStats = [
+            'total' => count($rooms),
+            'chua_lock' => 0,
+            'dang_giu' => 0,
+            'da_lock' => 0,
+        ];
+
+        foreach ($rooms as $room) {
+            if (isset($roomStats[$room['status']])) {
+                $roomStats[$room['status']]++;
+            }
+        }
 
         View::render('home.index', [
             'pageTitle' => 'Trang chủ',
@@ -41,14 +46,6 @@ class RoomController
             'roomMediaMap' => $roomMediaMap,
             'filters' => $filters,
             'roomStats' => $roomStats,
-            'pagination' => [
-                'current_page' => $currentPage,
-                'per_page' => $perPage,
-                'total_items' => $totalRooms,
-                'total_pages' => $totalPages,
-                'from' => $totalRooms > 0 ? $offset + 1 : 0,
-                'to' => min($offset + $perPage, $totalRooms),
-            ],
             'canRequestLock' => Auth::can(['staff']),
         ]);
     }
@@ -292,7 +289,7 @@ class RoomController
         ];
     }
 
-    private function fetchRooms(array $filters, ?int $limit = null, int $offset = 0): array
+    private function fetchRooms(array $filters): array
     {
         $connection = Database::connection();
         $sql = "SELECT rooms.*,
@@ -308,111 +305,48 @@ class RoomController
                 INNER JOIN branches ON branches.id = rooms.branch_id
                 INNER JOIN systems ON systems.id = branches.system_id
                 INNER JOIN districts ON districts.id = branches.district_id
-                LEFT JOIN room_media ON room_media.room_id = rooms.id";
+                LEFT JOIN room_media ON room_media.room_id = rooms.id
+                WHERE 1 = 1";
 
-        [$whereSql, $params] = $this->buildRoomFilterClause($filters);
-        $sql .= $whereSql;
-        $sql .= " GROUP BY rooms.id
-                  ORDER BY (rooms.status = 'chua_lock') DESC, rooms.updated_at DESC";
-
-        if ($limit !== null) {
-            $sql .= ' LIMIT :limit OFFSET :offset';
-        }
-
-        $statement = $connection->prepare($sql);
-        if ($limit !== null) {
-            $statement->bindValue(':limit', $limit, \PDO::PARAM_INT);
-            $statement->bindValue(':offset', max(0, $offset), \PDO::PARAM_INT);
-        }
-        $statement->execute($params);
-
-        return $statement->fetchAll();
-    }
-
-    private function countRooms(array $filters): int
-    {
-        $sql = "SELECT COUNT(*) AS aggregate
-                FROM rooms
-                INNER JOIN branches ON branches.id = rooms.branch_id
-                INNER JOIN systems ON systems.id = branches.system_id
-                INNER JOIN districts ON districts.id = branches.district_id";
-
-        [$whereSql, $params] = $this->buildRoomFilterClause($filters);
-        $statement = Database::connection()->prepare($sql . $whereSql);
-        $statement->execute($params);
-
-        return (int) ($statement->fetch()['aggregate'] ?? 0);
-    }
-
-    private function countRoomStats(array $filters): array
-    {
-        $stats = [
-            'total' => 0,
-            'chua_lock' => 0,
-            'dang_giu' => 0,
-            'da_lock' => 0,
-        ];
-
-        $sql = "SELECT rooms.status, COUNT(*) AS aggregate
-                FROM rooms
-                INNER JOIN branches ON branches.id = rooms.branch_id
-                INNER JOIN systems ON systems.id = branches.system_id
-                INNER JOIN districts ON districts.id = branches.district_id";
-
-        [$whereSql, $params] = $this->buildRoomFilterClause($filters);
-        $statement = Database::connection()->prepare($sql . $whereSql . ' GROUP BY rooms.status');
-        $statement->execute($params);
-
-        foreach ($statement->fetchAll() as $row) {
-            $status = $row['status'];
-            if (isset($stats[$status])) {
-                $stats[$status] = (int) $row['aggregate'];
-                $stats['total'] += (int) $row['aggregate'];
-            }
-        }
-
-        return $stats;
-    }
-
-    private function buildRoomFilterClause(array $filters): array
-    {
-        $whereSql = ' WHERE 1 = 1';
         $params = [];
-
         if ($filters['system_id'] > 0) {
-            $whereSql .= ' AND branches.system_id = :system_id';
+            $sql .= ' AND branches.system_id = :system_id';
             $params['system_id'] = $filters['system_id'];
         }
         if ($filters['branch_id'] > 0) {
-            $whereSql .= ' AND branches.id = :branch_id';
+            $sql .= ' AND branches.id = :branch_id';
             $params['branch_id'] = $filters['branch_id'];
         }
         if ($filters['district_id'] > 0) {
-            $whereSql .= ' AND branches.district_id = :district_id';
+            $sql .= ' AND branches.district_id = :district_id';
             $params['district_id'] = $filters['district_id'];
         }
         if ($filters['status'] !== '') {
-            $whereSql .= ' AND rooms.status = :status';
+            $sql .= ' AND rooms.status = :status';
             $params['status'] = $filters['status'];
         }
         if ($filters['furniture_status'] !== '') {
-            $whereSql .= ' AND rooms.furniture_status = :furniture_status';
+            $sql .= ' AND rooms.furniture_status = :furniture_status';
             $params['furniture_status'] = $filters['furniture_status'];
         }
         if ($filters['price_min'] !== '' && is_numeric($filters['price_min'])) {
-            $whereSql .= ' AND rooms.price >= :price_min';
+            $sql .= ' AND rooms.price >= :price_min';
             $params['price_min'] = (float) $filters['price_min'];
         }
         if ($filters['price_max'] !== '' && is_numeric($filters['price_max'])) {
-            $whereSql .= ' AND rooms.price <= :price_max';
+            $sql .= ' AND rooms.price <= :price_max';
             $params['price_max'] = (float) $filters['price_max'];
         }
         if ($filters['keyword'] !== '') {
-            $whereSql .= ' AND (rooms.room_number LIKE :keyword OR branches.name LIKE :keyword OR branches.address LIKE :keyword OR rooms.note LIKE :keyword)';
+            $sql .= ' AND (rooms.room_number LIKE :keyword OR branches.name LIKE :keyword OR branches.address LIKE :keyword OR rooms.note LIKE :keyword)';
             $params['keyword'] = '%' . $filters['keyword'] . '%';
         }
 
-        return [$whereSql, $params];
+        $sql .= ' GROUP BY rooms.id ORDER BY rooms.updated_at DESC';
+        $statement = $connection->prepare($sql);
+        $statement->execute($params);
+
+        return $statement->fetchAll();
     }
 
     private function relatedRooms(array $room): array
