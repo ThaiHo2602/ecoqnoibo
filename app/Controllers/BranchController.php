@@ -1,0 +1,214 @@
+<?php
+
+namespace App\Controllers;
+
+use App\Core\Auth;
+use App\Core\Database;
+use App\Core\Session;
+use App\Core\View;
+
+class BranchController
+{
+    public function index(): void
+    {
+        Auth::requireLogin();
+        Auth::authorize(['director', 'manager']);
+
+        $connection = Database::connection();
+        $filters = [
+            'system_id' => (int) query('system_id', 0),
+            'district_id' => (int) query('district_id', 0),
+            'keyword' => trim((string) query('keyword', '')),
+        ];
+
+        $systems = $connection->query('SELECT id, name FROM systems ORDER BY name ASC')->fetchAll();
+        $districts = $connection->query('SELECT id, name FROM districts ORDER BY name ASC')->fetchAll();
+
+        $sql = "SELECT branches.*,
+                       systems.name AS system_name,
+                       districts.name AS district_name,
+                       COUNT(rooms.id) AS room_count
+                FROM branches
+                INNER JOIN systems ON systems.id = branches.system_id
+                INNER JOIN districts ON districts.id = branches.district_id
+                LEFT JOIN rooms ON rooms.branch_id = branches.id
+                WHERE 1 = 1";
+
+        $params = [];
+        if ($filters['system_id'] > 0) {
+            $sql .= ' AND branches.system_id = :system_id';
+            $params['system_id'] = $filters['system_id'];
+        }
+        if ($filters['district_id'] > 0) {
+            $sql .= ' AND branches.district_id = :district_id';
+            $params['district_id'] = $filters['district_id'];
+        }
+        if ($filters['keyword'] !== '') {
+            $sql .= ' AND (branches.name LIKE :keyword OR branches.address LIKE :keyword OR branches.manager_phone LIKE :keyword)';
+            $params['keyword'] = '%' . $filters['keyword'] . '%';
+        }
+
+        $sql .= ' GROUP BY branches.id ORDER BY branches.created_at DESC';
+
+        $statement = $connection->prepare($sql);
+        $statement->execute($params);
+        $branches = $statement->fetchAll();
+
+        $editId = (int) query('edit', 0);
+        $editBranch = null;
+        foreach ($branches as $branch) {
+            if ((int) $branch['id'] === $editId) {
+                $editBranch = $branch;
+                break;
+            }
+        }
+
+        if ($editBranch === null && $editId > 0) {
+            $statement = $connection->prepare(
+                "SELECT branches.*, systems.name AS system_name, districts.name AS district_name
+                 FROM branches
+                 INNER JOIN systems ON systems.id = branches.system_id
+                 INNER JOIN districts ON districts.id = branches.district_id
+                 WHERE branches.id = :id
+                 LIMIT 1"
+            );
+            $statement->execute(['id' => $editId]);
+            $editBranch = $statement->fetch() ?: null;
+        }
+
+        View::render('branches.index', [
+            'pageTitle' => 'Chi nhanh',
+            'systems' => $systems,
+            'districts' => $districts,
+            'branches' => $branches,
+            'filters' => $filters,
+            'editBranch' => $editBranch,
+        ]);
+    }
+
+    public function store(): void
+    {
+        Auth::requireLogin();
+        Auth::authorize(['director', 'manager']);
+
+        $systemId = (int) ($_POST['system_id'] ?? 0);
+        $districtId = (int) ($_POST['district_id'] ?? 0);
+        $name = trim($_POST['name'] ?? '');
+        $address = trim($_POST['address'] ?? '');
+        $managerPhone = trim($_POST['manager_phone'] ?? '');
+
+        if ($systemId <= 0 || $districtId <= 0 || $name === '' || $address === '') {
+            Session::flash('error', 'Vui long nhap day du thong tin chi nhanh.');
+            redirect($this->redirectTarget());
+        }
+
+        try {
+            Database::connection()->prepare(
+                'INSERT INTO branches (system_id, district_id, name, address, manager_phone)
+                 VALUES (:system_id, :district_id, :name, :address, :manager_phone)'
+            )->execute([
+                'system_id' => $systemId,
+                'district_id' => $districtId,
+                'name' => $name,
+                'address' => $address,
+                'manager_phone' => $managerPhone !== '' ? $managerPhone : null,
+            ]);
+        } catch (\PDOException) {
+            Session::flash('error', 'Them chi nhanh that bai. Ten chi nhanh co the da bi trung trong he thong.');
+            redirect($this->redirectTarget());
+        }
+
+        $user = Auth::user();
+        activity_log((int) $user['id'], 'create', 'branches', 'Tao chi nhanh: ' . $name);
+        Session::flash('success', 'Da them chi nhanh thanh cong.');
+        redirect($this->redirectTarget());
+    }
+
+    public function update(): void
+    {
+        Auth::requireLogin();
+        Auth::authorize(['director', 'manager']);
+
+        $id = (int) ($_POST['id'] ?? 0);
+        $systemId = (int) ($_POST['system_id'] ?? 0);
+        $districtId = (int) ($_POST['district_id'] ?? 0);
+        $name = trim($_POST['name'] ?? '');
+        $address = trim($_POST['address'] ?? '');
+        $managerPhone = trim($_POST['manager_phone'] ?? '');
+
+        if ($id <= 0 || $systemId <= 0 || $districtId <= 0 || $name === '' || $address === '') {
+            Session::flash('error', 'Thong tin cap nhat chi nhanh khong hop le.');
+            redirect($this->redirectTarget());
+        }
+
+        try {
+            Database::connection()->prepare(
+                'UPDATE branches
+                 SET system_id = :system_id, district_id = :district_id, name = :name, address = :address, manager_phone = :manager_phone
+                 WHERE id = :id'
+            )->execute([
+                'id' => $id,
+                'system_id' => $systemId,
+                'district_id' => $districtId,
+                'name' => $name,
+                'address' => $address,
+                'manager_phone' => $managerPhone !== '' ? $managerPhone : null,
+            ]);
+        } catch (\PDOException) {
+            Session::flash('error', 'Cap nhat chi nhanh that bai. Vui long kiem tra du lieu bi trung.');
+            redirect($this->redirectTarget());
+        }
+
+        $user = Auth::user();
+        activity_log((int) $user['id'], 'update', 'branches', 'Cap nhat chi nhanh #' . $id . ': ' . $name);
+        Session::flash('success', 'Da cap nhat chi nhanh thanh cong.');
+        redirect($this->redirectTarget());
+    }
+
+    public function delete(): void
+    {
+        Auth::requireLogin();
+        Auth::authorize(['director', 'manager']);
+
+        $id = (int) ($_POST['id'] ?? 0);
+        if ($id <= 0) {
+            Session::flash('error', 'Chi nhanh khong hop le.');
+            redirect($this->redirectTarget());
+        }
+
+        $connection = Database::connection();
+        $statement = $connection->prepare('SELECT * FROM branches WHERE id = :id LIMIT 1');
+        $statement->execute(['id' => $id]);
+        $branch = $statement->fetch();
+
+        if (! $branch) {
+            Session::flash('error', 'Chi nhanh khong ton tai.');
+            redirect($this->redirectTarget());
+        }
+
+        $roomCountStatement = $connection->prepare('SELECT COUNT(*) FROM rooms WHERE branch_id = :id');
+        $roomCountStatement->execute(['id' => $id]);
+        if ((int) $roomCountStatement->fetchColumn() > 0) {
+            Session::flash('error', 'Khong the xoa chi nhanh khi van con phong ben trong.');
+            redirect($this->redirectTarget());
+        }
+
+        $connection->prepare('DELETE FROM branches WHERE id = :id')->execute(['id' => $id]);
+
+        $user = Auth::user();
+        activity_log((int) $user['id'], 'delete', 'branches', 'Xoa chi nhanh #' . $id . ': ' . $branch['name']);
+        Session::flash('success', 'Da xoa chi nhanh thanh cong.');
+        redirect($this->redirectTarget());
+    }
+
+    private function redirectTarget(): string
+    {
+        $target = trim((string) ($_POST['redirect_to'] ?? '/branches'));
+
+        if ($target === '' || ! str_starts_with($target, '/')) {
+            return '/branches';
+        }
+
+        return $target;
+    }
+}

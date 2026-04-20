@@ -1,0 +1,217 @@
+<?php
+$statusLabels = [
+    'chua_lock' => 'Chưa lock',
+    'dang_giu' => 'Đang giữ',
+    'da_lock' => 'Đã lock',
+];
+$typeLabels = [
+    'co_gac' => 'Có gác',
+    'khong_gac' => 'Không gác',
+];
+$furnitureLabels = [
+    'co_noi_that' => 'Có nội thất',
+    'khong_noi_that' => 'Không nội thất',
+];
+$windowLabels = [
+    'cua_so_troi' => 'Cửa sổ trời',
+    'cua_so_hanh_lang' => 'Cửa sổ hành lang',
+    'cua_so_gieng_troi' => 'Cửa sổ giếng trời',
+];
+$lockLabels = [
+    'pending' => 'Chờ duyệt',
+    'approved' => 'Đã duyệt',
+    'rejected' => 'Từ chối',
+];
+?>
+
+<section class="room-detail-page">
+    <div class="breadcrumb-line">
+        <a href="<?= e(url('/')) ?>">Trang chủ</a>
+        <span>/</span>
+        <span><?= e('Phòng ' . $room['room_number']) ?></span>
+    </div>
+
+    <div class="room-detail-top">
+        <div class="room-gallery-main">
+            <?php if ($media): ?>
+                <?php $hero = $media[0]; ?>
+                <div class="room-hero-media">
+                    <?php if ($hero['media_type'] === 'image'): ?>
+                        <img src="<?= e(url('../' . $hero['file_path'])) ?>" alt="<?= e($room['room_number']) ?>">
+                    <?php else: ?>
+                        <video src="<?= e(url('../' . $hero['file_path'])) ?>" controls preload="metadata"></video>
+                    <?php endif; ?>
+                </div>
+                <div class="room-gallery-grid">
+                    <?php foreach ($media as $item): ?>
+                        <div class="room-gallery-thumb">
+                            <?php if ($item['media_type'] === 'image'): ?>
+                                <img src="<?= e(url('../' . $item['file_path'])) ?>" alt="<?= e($item['file_name']) ?>">
+                            <?php else: ?>
+                                <video src="<?= e(url('../' . $item['file_path'])) ?>" controls preload="metadata"></video>
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <div class="room-no-media">Phòng này chưa có hình ảnh hoặc video.</div>
+            <?php endif; ?>
+        </div>
+
+        <aside class="room-summary-card">
+            <div class="eyebrow">Chi tiết phòng</div>
+            <h1><?= e('Phòng ' . $room['room_number'] . ' - ' . $room['branch_name']) ?></h1>
+            <p class="room-summary-address"><?= e($room['branch_address']) ?></p>
+            <div class="room-summary-price"><?= e(number_format((float) $room['price'], 0, ',', '.')) ?>đ/tháng</div>
+
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <span class="status-pill status-<?= e($room['status']) ?>"><?= e($statusLabels[$room['status']] ?? $room['status']) ?></span>
+                <span class="detail-tag"><?= e($typeLabels[$room['room_type']] ?? $room['room_type']) ?></span>
+                <span class="detail-tag"><?= e($furnitureLabels[$room['furniture_status']] ?? $room['furniture_status']) ?></span>
+            </div>
+
+            <div class="room-cta-stack">
+                <?php if ($canRequestLock && $room['status'] === 'chua_lock'): ?>
+                    <form method="POST" action="<?= e(url('/lock-requests/store')) ?>" class="d-grid gap-3">
+                        <input type="hidden" name="room_id" value="<?= e((string) $room['id']) ?>">
+                        <textarea name="request_note" class="form-control" rows="3" placeholder="Ghi chú cho quản lý khi gửi yêu cầu lock"></textarea>
+                        <button type="submit" class="btn btn-warning btn-lg">Gửi yêu cầu lock</button>
+                    </form>
+                <?php elseif ($canRequestLock): ?>
+                    <div class="empty-state">Phòng này hiện đang <?= e(mb_strtolower($statusLabels[$room['status']] ?? $room['status'])) ?> nên chưa thể gửi yêu cầu lock mới.</div>
+                <?php endif; ?>
+
+                <?php if ($canManage): ?>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="<?= e(url('/rooms?edit=' . $room['id'])) ?>" class="btn btn-primary">Chỉnh sửa phòng</a>
+                        <form method="POST" action="<?= e(url('/rooms/delete')) ?>" onsubmit="return confirm('Bạn chắc chắn muốn xóa phòng này?');">
+                            <input type="hidden" name="id" value="<?= e((string) $room['id']) ?>">
+                            <button type="submit" class="btn btn-outline-danger">Xóa phòng</button>
+                        </form>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </aside>
+    </div>
+
+    <section class="room-section-grid mt-4">
+        <div class="detail-card">
+            <div class="panel-header mb-3">
+                <div>
+                    <h3>Mô tả phòng</h3>
+                    <p class="panel-subtitle mb-0">Thông tin tổng quát để nhân viên dễ tư vấn khách.</p>
+                </div>
+            </div>
+            <p class="mb-0"><?= e($room['note'] ?: 'Phòng hiện chưa có mô tả chi tiết.') ?></p>
+        </div>
+
+        <div class="detail-card">
+            <div class="panel-header mb-3">
+                <div>
+                    <h3>Thông tin lock gần nhất</h3>
+                    <p class="panel-subtitle mb-0">Chỉ hiển thị trạng thái xử lý gần nhất của phòng này.</p>
+                </div>
+            </div>
+            <?php if ($latestLock): ?>
+                <div class="detail-list">
+                    <div><span>Trạng thái yêu cầu</span><strong><?= e($lockLabels[$latestLock['request_status']] ?? $latestLock['request_status']) ?></strong></div>
+                    <div><span>Người gửi</span><strong><?= e($latestLock['requester_name']) ?></strong></div>
+                    <div><span>Thời gian gửi</span><strong><?= e($latestLock['requested_at']) ?></strong></div>
+                </div>
+                <?php if ($latestLock['request_note']): ?>
+                    <div class="detail-note mt-3"><?= e($latestLock['request_note']) ?></div>
+                <?php endif; ?>
+            <?php else: ?>
+                <div class="empty-state">Phòng này chưa có lịch sử lock.</div>
+            <?php endif; ?>
+        </div>
+    </section>
+
+    <section class="detail-card mt-4">
+        <div class="panel-header mb-3">
+            <div>
+                <h3>Thông tin chi tiết</h3>
+                <p class="panel-subtitle mb-0">Tổng hợp các chi phí và đặc điểm phòng theo đúng dữ liệu nội bộ.</p>
+            </div>
+        </div>
+
+        <div class="detail-spec-grid">
+            <div><span>Hệ thống</span><strong><?= e($room['system_name']) ?></strong></div>
+            <div><span>Chi nhánh</span><strong><?= e($room['branch_name']) ?></strong></div>
+            <div><span>Quận</span><strong><?= e($room['district_name']) ?></strong></div>
+            <div><span>Số phòng</span><strong><?= e($room['room_number']) ?></strong></div>
+            <div><span>Giá phòng</span><strong><?= e(number_format((float) $room['price'], 0, ',', '.')) ?>đ</strong></div>
+            <div><span>Loại phòng</span><strong><?= e($typeLabels[$room['room_type']] ?? $room['room_type']) ?></strong></div>
+            <div><span>Tiền điện</span><strong><?= e(number_format((float) $room['electricity_fee'], 0, ',', '.')) ?>đ</strong></div>
+            <div><span>Tiền nước</span><strong><?= e(number_format((float) $room['water_fee'], 0, ',', '.')) ?>đ</strong></div>
+            <div><span>Phí dịch vụ</span><strong><?= e(number_format((float) $room['service_fee'], 0, ',', '.')) ?>đ</strong></div>
+            <div><span>Phí gửi xe</span><strong><?= e(number_format((float) $room['parking_fee'], 0, ',', '.')) ?>đ</strong></div>
+            <div><span>Nội thất</span><strong><?= e($furnitureLabels[$room['furniture_status']] ?? $room['furniture_status']) ?></strong></div>
+            <div><span>Ban công</span><strong><?= (int) $room['has_balcony'] === 1 ? 'Có' : 'Không' ?></strong></div>
+            <div><span>Loại cửa sổ</span><strong><?= e($windowLabels[$room['window_type']] ?? $room['window_type']) ?></strong></div>
+            <div><span>Trạng thái</span><strong><?= e($statusLabels[$room['status']] ?? $room['status']) ?></strong></div>
+        </div>
+    </section>
+
+    <section class="room-section-grid mt-4">
+        <div class="detail-card">
+            <div class="panel-header mb-3">
+                <div>
+                    <h3>Vị trí</h3>
+                    <p class="panel-subtitle mb-0">Khối placeholder để sau này tích hợp bản đồ thật.</p>
+                </div>
+            </div>
+            <div class="map-placeholder">
+                <div class="map-pin">📍</div>
+                <div>
+                    <div class="fw-semibold"><?= e($room['branch_address']) ?></div>
+                    <div class="text-muted">Khu vực: <?= e($room['district_name']) ?></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-card">
+            <div class="panel-header mb-3">
+                <div>
+                    <h3>Liên hệ chi nhánh</h3>
+                    <p class="panel-subtitle mb-0">Dùng khi cần chốt lịch xem phòng với khách.</p>
+                </div>
+            </div>
+            <div class="detail-list">
+                <div><span>Địa chỉ</span><strong><?= e($room['branch_address']) ?></strong></div>
+                <div><span>Số điện thoại quản lý</span><strong><?= e($room['manager_phone'] ?: 'Chưa cập nhật') ?></strong></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="related-section mt-4">
+        <div class="related-header">
+            <div>
+                <div class="eyebrow">Gợi ý thêm</div>
+                <h3>Phòng liên quan cùng khu vực hoặc cùng chi nhánh</h3>
+            </div>
+        </div>
+
+        <div class="listing-grid related-grid">
+            <?php foreach ($relatedRooms as $relatedRoom): ?>
+                <?php $cover = $relatedMediaMap[$relatedRoom['id']][0] ?? null; ?>
+                <a href="<?= e(url('/rooms/' . $relatedRoom['id'])) ?>" class="listing-card compact-card">
+                    <div class="listing-card-media">
+                        <?php if ($cover && $cover['media_type'] === 'image'): ?>
+                            <img src="<?= e(url('../' . $cover['file_path'])) ?>" alt="<?= e($relatedRoom['room_number']) ?>">
+                        <?php elseif ($cover && $cover['media_type'] === 'video'): ?>
+                            <video src="<?= e(url('../' . $cover['file_path'])) ?>" muted preload="metadata"></video>
+                        <?php else: ?>
+                            <div class="listing-card-placeholder">Chưa có ảnh</div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="listing-card-body">
+                        <h3><?= e('Phòng ' . $relatedRoom['room_number'] . ' - ' . $relatedRoom['branch_name']) ?></h3>
+                        <div class="listing-price">Từ <?= e(number_format((float) $relatedRoom['price'], 0, ',', '.')) ?>đ/tháng</div>
+                        <div class="listing-address"><?= e($relatedRoom['district_name']) ?></div>
+                    </div>
+                </a>
+            <?php endforeach; ?>
+        </div>
+    </section>
+</section>
