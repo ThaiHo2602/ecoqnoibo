@@ -3,9 +3,10 @@
 <section class="hero-panel">
     <div>
         <div class="eyebrow">Tổng quan nội bộ</div>
-        <h2>Chào <?= e($user['full_name'] ?? '') ?>, đây là bảng điều khiển để theo dõi toàn bộ hoạt động quản trị.</h2>
+        <h2>Chào <?= e($user['full_name'] ?? '') ?>, đây là bảng điều khiển dành cho vận hành và quản trị toàn hệ thống.</h2>
         <p class="mb-0 text-muted">
-            Trang chủ sau đăng nhập đã được chuyển sang listing phòng kiểu card. Màn này giữ vai trò bảng điều khiển riêng cho quản lý và giám đốc.
+            Trang chủ sau đăng nhập là màn hình tìm phòng. Khu vực này tập trung vào số liệu, trạng thái vận hành
+            và các dữ liệu cần theo dõi nhanh cho quản lý và giám đốc.
         </p>
     </div>
     <div class="hero-chip">
@@ -43,7 +44,7 @@
             <table class="table align-middle mb-0">
                 <thead>
                     <tr>
-                        <th>Phong</th>
+                        <th>Phòng</th>
                         <th>Chi nhánh</th>
                         <th>Quận</th>
                         <th>Giá</th>
@@ -56,7 +57,7 @@
                             <td><?= e($room['room_number']) ?></td>
                             <td><?= e($room['branch_name']) ?></td>
                             <td><?= e($room['district_name']) ?></td>
-                            <td><?= e(number_format((float) $room['price'], 0, ',', '.')) ?> VND</td>
+                            <td><?= e(number_format((float) $room['price'], 0, ',', '.')) ?> đ</td>
                             <td><span class="status-pill status-<?= e($room['status']) ?>"><?= e($room['status']) ?></span></td>
                         </tr>
                     <?php endforeach; ?>
@@ -68,7 +69,7 @@
     <div class="panel-card">
         <div class="panel-header">
             <h3>Yêu cầu lock gần đây</h3>
-            <span class="badge text-bg-light">Workflow</span>
+            <span class="badge text-bg-light">Luồng xử lý</span>
         </div>
         <div class="list-group list-group-flush">
             <?php foreach ($recentLockRequests as $request): ?>

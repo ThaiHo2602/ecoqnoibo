@@ -14,7 +14,7 @@ class ProfileController
         Auth::requireLogin();
 
         View::render('profile.password', [
-            'pageTitle' => 'Doi mat khau',
+            'pageTitle' => 'Đổi mật khẩu',
             'user' => Auth::user(),
         ]);
     }
@@ -29,17 +29,17 @@ class ProfileController
         $user = Auth::user();
 
         if ($currentPassword === '' || $newPassword === '' || $confirmPassword === '') {
-            Session::flash('error', 'Vui long nhap day du thong tin doi mat khau.');
+            Session::flash('error', 'Vui lòng nhập đầy đủ thông tin đổi mật khẩu.');
             redirect('/profile/password');
         }
 
         if (strlen($newPassword) < 6) {
-            Session::flash('error', 'Mat khau moi phai tu 6 ky tu tro len.');
+            Session::flash('error', 'Mật khẩu mới phải từ 6 ký tự trở lên.');
             redirect('/profile/password');
         }
 
         if ($newPassword !== $confirmPassword) {
-            Session::flash('error', 'Xac nhan mat khau moi khong khop.');
+            Session::flash('error', 'Xác nhận mật khẩu mới không khớp.');
             redirect('/profile/password');
         }
 
@@ -48,7 +48,7 @@ class ProfileController
         $dbUser = $statement->fetch();
 
         if (! $dbUser || ! password_verify($currentPassword, $dbUser['password'])) {
-            Session::flash('error', 'Mat khau hien tai khong dung.');
+            Session::flash('error', 'Mật khẩu hiện tại không đúng.');
             redirect('/profile/password');
         }
 
@@ -59,8 +59,8 @@ class ProfileController
             'id' => $user['id'],
         ]);
 
-        activity_log((int) $user['id'], 'change_password', 'profile', 'Doi mat khau tai khoan.');
-        Session::flash('success', 'Da doi mat khau thanh cong.');
+        activity_log((int) $user['id'], 'change_password', 'profile', 'Đổi mật khẩu tài khoản.');
+        Session::flash('success', 'Đã đổi mật khẩu thành công.');
         redirect('/profile/password');
     }
 }

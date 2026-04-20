@@ -35,23 +35,54 @@ $lockLabels = [
         <div class="room-gallery-main">
             <?php if ($media): ?>
                 <?php $hero = $media[0]; ?>
-                <div class="room-hero-media">
-                    <?php if ($hero['media_type'] === 'image'): ?>
-                        <img src="<?= e(url('../' . $hero['file_path'])) ?>" alt="<?= e($room['room_number']) ?>">
-                    <?php else: ?>
-                        <video src="<?= e(url('../' . $hero['file_path'])) ?>" controls preload="metadata"></video>
-                    <?php endif; ?>
-                </div>
-                <div class="room-gallery-grid">
-                    <?php foreach ($media as $item): ?>
-                        <div class="room-gallery-thumb">
-                            <?php if ($item['media_type'] === 'image'): ?>
-                                <img src="<?= e(url('../' . $item['file_path'])) ?>" alt="<?= e($item['file_name']) ?>">
+                <div class="room-gallery-shell" data-room-gallery data-current-index="0">
+                    <div class="room-hero-media">
+                        <div class="room-hero-stage" data-room-gallery-stage>
+                            <?php if ($hero['media_type'] === 'image'): ?>
+                                <img
+                                    src="<?= e(url('../' . $hero['file_path'])) ?>"
+                                    alt="<?= e($room['room_number']) ?>"
+                                    data-room-gallery-display
+                                    data-media-type="image"
+                                >
                             <?php else: ?>
-                                <video src="<?= e(url('../' . $item['file_path'])) ?>" controls preload="metadata"></video>
+                                <video
+                                    src="<?= e(url('../' . $hero['file_path'])) ?>"
+                                    controls
+                                    preload="metadata"
+                                    data-room-gallery-display
+                                    data-media-type="video"
+                                ></video>
                             <?php endif; ?>
                         </div>
-                    <?php endforeach; ?>
+
+                        <?php if (count($media) > 1): ?>
+                            <button type="button" class="room-gallery-nav prev" data-gallery-prev aria-label="Ảnh trước">‹</button>
+                            <button type="button" class="room-gallery-nav next" data-gallery-next aria-label="Ảnh tiếp theo">›</button>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="room-gallery-grid">
+                        <?php foreach ($media as $index => $item): ?>
+                            <button
+                                type="button"
+                                class="room-gallery-thumb <?= $index === 0 ? 'is-active' : '' ?>"
+                                data-gallery-thumb
+                                data-index="<?= e((string) $index) ?>"
+                                data-media-type="<?= e($item['media_type']) ?>"
+                                data-src="<?= e(url('../' . $item['file_path'])) ?>"
+                                data-alt="<?= e($item['file_name'] ?: ('Phòng ' . $room['room_number'])) ?>"
+                                aria-label="<?= e('Chuyển tới media ' . ($index + 1)) ?>"
+                            >
+                                <?php if ($item['media_type'] === 'image'): ?>
+                                    <img src="<?= e(url('../' . $item['file_path'])) ?>" alt="<?= e($item['file_name']) ?>">
+                                <?php else: ?>
+                                    <video src="<?= e(url('../' . $item['file_path'])) ?>" muted preload="metadata"></video>
+                                    <span class="room-gallery-video-badge">Video</span>
+                                <?php endif; ?>
+                            </button>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
             <?php else: ?>
                 <div class="room-no-media">Phòng này chưa có hình ảnh hoặc video.</div>
@@ -74,6 +105,7 @@ $lockLabels = [
                 <?php if ($canRequestLock && $room['status'] === 'chua_lock'): ?>
                     <form method="POST" action="<?= e(url('/lock-requests/store')) ?>" class="d-grid gap-3">
                         <input type="hidden" name="room_id" value="<?= e((string) $room['id']) ?>">
+                        <input type="hidden" name="return_to" value="<?= e(current_path()) ?>">
                         <textarea name="request_note" class="form-control" rows="3" placeholder="Ghi chú cho quản lý khi gửi yêu cầu lock"></textarea>
                         <button type="submit" class="btn btn-warning btn-lg">Gửi yêu cầu lock</button>
                     </form>
@@ -99,7 +131,7 @@ $lockLabels = [
             <div class="panel-header mb-3">
                 <div>
                     <h3>Mô tả phòng</h3>
-                    <p class="panel-subtitle mb-0">Thông tin tổng quát để nhân viên dễ tư vấn khách.</p>
+                    <p class="panel-subtitle mb-0">Thông tin tổng quát để nhân viên tư vấn khách nhanh và chính xác.</p>
                 </div>
             </div>
             <p class="mb-0"><?= e($room['note'] ?: 'Phòng hiện chưa có mô tả chi tiết.') ?></p>
@@ -109,7 +141,7 @@ $lockLabels = [
             <div class="panel-header mb-3">
                 <div>
                     <h3>Thông tin lock gần nhất</h3>
-                    <p class="panel-subtitle mb-0">Chỉ hiển thị trạng thái xử lý gần nhất của phòng này.</p>
+                    <p class="panel-subtitle mb-0">Hiển thị trạng thái xử lý mới nhất của phòng này.</p>
                 </div>
             </div>
             <?php if ($latestLock): ?>
@@ -131,7 +163,7 @@ $lockLabels = [
         <div class="panel-header mb-3">
             <div>
                 <h3>Thông tin chi tiết</h3>
-                <p class="panel-subtitle mb-0">Tổng hợp các chi phí và đặc điểm phòng theo đúng dữ liệu nội bộ.</p>
+                <p class="panel-subtitle mb-0">Tổng hợp chi phí và đặc điểm phòng theo đúng dữ liệu nội bộ.</p>
             </div>
         </div>
 
@@ -158,7 +190,7 @@ $lockLabels = [
             <div class="panel-header mb-3">
                 <div>
                     <h3>Vị trí</h3>
-                    <p class="panel-subtitle mb-0">Khối placeholder để sau này tích hợp bản đồ thật.</p>
+                    <p class="panel-subtitle mb-0">Khu vực hiển thị nhanh vị trí chi nhánh, sẵn sàng để tích hợp bản đồ thật sau này.</p>
                 </div>
             </div>
             <div class="map-placeholder">
@@ -174,7 +206,7 @@ $lockLabels = [
             <div class="panel-header mb-3">
                 <div>
                     <h3>Liên hệ chi nhánh</h3>
-                    <p class="panel-subtitle mb-0">Dùng khi cần chốt lịch xem phòng với khách.</p>
+                    <p class="panel-subtitle mb-0">Dùng khi cần chốt lịch xem phòng hoặc xác nhận thông tin thực tế.</p>
                 </div>
             </div>
             <div class="detail-list">
@@ -215,3 +247,76 @@ $lockLabels = [
         </div>
     </section>
 </section>
+
+<?php if ($media): ?>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const gallery = document.querySelector('[data-room-gallery]');
+            if (!gallery) {
+                return;
+            }
+
+            const stage = gallery.querySelector('[data-room-gallery-stage]');
+            const thumbs = Array.from(gallery.querySelectorAll('[data-gallery-thumb]'));
+            const prevButton = gallery.querySelector('[data-gallery-prev]');
+            const nextButton = gallery.querySelector('[data-gallery-next]');
+
+            const renderMedia = (index) => {
+                const item = thumbs[index];
+                if (!item || !stage) {
+                    return;
+                }
+
+                const src = item.dataset.src || '';
+                const type = item.dataset.mediaType || 'image';
+                const alt = item.dataset.alt || '';
+
+                stage.innerHTML = '';
+
+                if (type === 'video') {
+                    const video = document.createElement('video');
+                    video.src = src;
+                    video.controls = true;
+                    video.preload = 'metadata';
+                    video.setAttribute('data-room-gallery-display', '');
+                    video.setAttribute('data-media-type', 'video');
+                    stage.appendChild(video);
+                } else {
+                    const image = document.createElement('img');
+                    image.src = src;
+                    image.alt = alt;
+                    image.setAttribute('data-room-gallery-display', '');
+                    image.setAttribute('data-media-type', 'image');
+                    stage.appendChild(image);
+                }
+
+                gallery.dataset.currentIndex = String(index);
+                thumbs.forEach((thumb, thumbIndex) => {
+                    thumb.classList.toggle('is-active', thumbIndex === index);
+                });
+            };
+
+            thumbs.forEach((thumb, index) => {
+                thumb.addEventListener('click', function () {
+                    renderMedia(index);
+                });
+            });
+
+            if (prevButton) {
+                prevButton.addEventListener('click', function () {
+                    const currentIndex = Number(gallery.dataset.currentIndex || 0);
+                    const nextIndex = currentIndex === 0 ? thumbs.length - 1 : currentIndex - 1;
+                    renderMedia(nextIndex);
+                });
+            }
+
+            if (nextButton) {
+                nextButton.addEventListener('click', function () {
+                    const currentIndex = Number(gallery.dataset.currentIndex || 0);
+                    const nextIndex = currentIndex === thumbs.length - 1 ? 0 : currentIndex + 1;
+                    renderMedia(nextIndex);
+                });
+            }
+        });
+    </script>
+<?php endif; ?>

@@ -2,16 +2,16 @@
     <div class="panel-card">
         <div class="panel-header">
             <div>
-                <h3>Bo loc chi nhanh</h3>
-                <p class="panel-subtitle mb-0">Loc theo he thong, quan va tu khoa de quan ly nhanh hon.</p>
+                <h3>Bộ lọc chi nhánh</h3>
+                <p class="panel-subtitle mb-0">Lọc theo hệ thống, quận và từ khóa để quản lý nhanh hơn.</p>
             </div>
         </div>
 
         <form method="GET" action="<?= e(url('/branches')) ?>" class="d-grid gap-3">
             <div>
-                <label class="form-label">He thong</label>
+                <label class="form-label">Hệ thống</label>
                 <select name="system_id" class="form-select">
-                    <option value="0">Tat ca he thong</option>
+                    <option value="0">Tất cả hệ thống</option>
                     <?php foreach ($systems as $system): ?>
                         <option value="<?= e((string) $system['id']) ?>" <?= (int) $filters['system_id'] === (int) $system['id'] ? 'selected' : '' ?>>
                             <?= e($system['name']) ?>
@@ -21,9 +21,9 @@
             </div>
 
             <div>
-                <label class="form-label">Quan</label>
+                <label class="form-label">Quận</label>
                 <select name="district_id" class="form-select">
-                    <option value="0">Tat ca quan</option>
+                    <option value="0">Tất cả quận</option>
                     <?php foreach ($districts as $district): ?>
                         <option value="<?= e((string) $district['id']) ?>" <?= (int) $filters['district_id'] === (int) $district['id'] ? 'selected' : '' ?>>
                             <?= e($district['name']) ?>
@@ -33,13 +33,13 @@
             </div>
 
             <div>
-                <label class="form-label">Tu khoa</label>
-                <input type="text" name="keyword" class="form-control" value="<?= e($filters['keyword']) ?>" placeholder="Ten, dia chi hoac so dien thoai">
+                <label class="form-label">Từ khóa</label>
+                <input type="text" name="keyword" class="form-control" value="<?= e($filters['keyword']) ?>" placeholder="Tên, địa chỉ hoặc số điện thoại">
             </div>
 
             <div class="d-flex gap-2 flex-wrap">
-                <button type="submit" class="btn btn-primary">Ap dung bo loc</button>
-                <a href="<?= e(url('/branches')) ?>" class="btn btn-outline-secondary">Xoa loc</a>
+                <button type="submit" class="btn btn-primary">Áp dụng bộ lọc</button>
+                <a href="<?= e(url('/branches')) ?>" class="btn btn-outline-secondary">Xóa lọc</a>
             </div>
         </form>
     </div>
@@ -47,8 +47,8 @@
     <div class="panel-card">
         <div class="panel-header">
             <div>
-                <h3><?= $editBranch ? 'Cap nhat chi nhanh' : 'Them chi nhanh moi' ?></h3>
-                <p class="panel-subtitle mb-0">Danh cho quan ly va giam doc thao tac CRUD nhanh.</p>
+                <h3><?= $editBranch ? 'Cập nhật chi nhánh' : 'Thêm chi nhánh mới' ?></h3>
+                <p class="panel-subtitle mb-0">Dành cho quản lý và giám đốc thao tác CRUD nhanh.</p>
             </div>
         </div>
 
@@ -59,9 +59,9 @@
             <input type="hidden" name="redirect_to" value="/branches">
 
             <div>
-                <label class="form-label">He thong</label>
+                <label class="form-label">Hệ thống</label>
                 <select name="system_id" class="form-select" required>
-                    <option value="">Chon he thong</option>
+                    <option value="">Chọn hệ thống</option>
                     <?php foreach ($systems as $system): ?>
                         <option value="<?= e((string) $system['id']) ?>" <?= (int) ($editBranch['system_id'] ?? $filters['system_id']) === (int) $system['id'] ? 'selected' : '' ?>>
                             <?= e($system['name']) ?>
@@ -71,14 +71,14 @@
             </div>
 
             <div>
-                <label class="form-label">Ten chi nhanh</label>
+                <label class="form-label">Tên chi nhánh</label>
                 <input type="text" name="name" class="form-control" value="<?= e($editBranch['name'] ?? '') ?>" required>
             </div>
 
             <div>
-                <label class="form-label">Quan</label>
+                <label class="form-label">Quận</label>
                 <select name="district_id" class="form-select" required>
-                    <option value="">Chon quan</option>
+                    <option value="">Chọn quận</option>
                     <?php foreach ($districts as $district): ?>
                         <option value="<?= e((string) $district['id']) ?>" <?= (int) ($editBranch['district_id'] ?? $filters['district_id']) === (int) $district['id'] ? 'selected' : '' ?>>
                             <?= e($district['name']) ?>
@@ -88,19 +88,19 @@
             </div>
 
             <div>
-                <label class="form-label">Dia chi</label>
+                <label class="form-label">Địa chỉ</label>
                 <input type="text" name="address" class="form-control" value="<?= e($editBranch['address'] ?? '') ?>" required>
             </div>
 
             <div>
-                <label class="form-label">So dien thoai quan ly</label>
+                <label class="form-label">Số điện thoại quản lý</label>
                 <input type="text" name="manager_phone" class="form-control" value="<?= e($editBranch['manager_phone'] ?? '') ?>">
             </div>
 
             <div class="d-flex gap-2 flex-wrap">
-                <button type="submit" class="btn btn-primary"><?= $editBranch ? 'Luu cap nhat' : 'Them chi nhanh' ?></button>
+                <button type="submit" class="btn btn-primary"><?= $editBranch ? 'Lưu cập nhật' : 'Thêm chi nhánh' ?></button>
                 <?php if ($editBranch): ?>
-                    <a href="<?= e(url('/branches')) ?>" class="btn btn-outline-secondary">Bo chinh sua</a>
+                    <a href="<?= e(url('/branches')) ?>" class="btn btn-outline-secondary">Bỏ chỉnh sửa</a>
                 <?php endif; ?>
             </div>
         </form>
@@ -110,30 +110,30 @@
 <section class="panel-card mt-4">
     <div class="panel-header">
         <div>
-            <h3>Danh sach chi nhanh</h3>
-            <p class="panel-subtitle mb-0">Dang hien thi theo bo loc hien tai. O buoc sau minh se noi them popup danh sach phong theo chi nhanh.</p>
+            <h3>Danh sách chi nhánh</h3>
+            <p class="panel-subtitle mb-0">Đang hiển thị theo bộ lọc hiện tại. Ở bước sau mình sẽ nối thêm popup danh sách phòng theo chi nhánh.</p>
         </div>
-        <span class="badge text-bg-light"><?= e((string) count($branches)) ?> chi nhanh</span>
+        <span class="badge text-bg-light"><?= e((string) count($branches)) ?> chi nhánh</span>
     </div>
 
     <div class="table-responsive">
         <table class="table align-middle mb-0">
             <thead>
                 <tr>
-                    <th>Chi nhanh</th>
-                    <th>He thong</th>
-                    <th>Quan</th>
-                    <th>Dia chi</th>
-                    <th>SDT quan ly</th>
-                    <th>So phong</th>
-                    <th class="text-end">Thao tac</th>
+                    <th>Chi nhánh</th>
+                    <th>Hệ thống</th>
+                    <th>Quận</th>
+                    <th>Địa chỉ</th>
+                    <th>SDT quản lý</th>
+                    <th>Số phòng</th>
+                    <th class="text-end">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (! $branches): ?>
                     <tr>
                         <td colspan="7">
-                            <div class="empty-state my-3">Chua co chi nhanh nao phu hop voi bo loc hien tai.</div>
+                            <div class="empty-state my-3">Chưa có chi nhánh nào phù hợp với bộ lọc hiện tại.</div>
                         </td>
                     </tr>
                 <?php endif; ?>
@@ -148,12 +148,12 @@
                         <td><?= e((string) $branch['room_count']) ?></td>
                         <td class="text-end">
                             <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
-                                <a href="<?= e(url('/branches?edit=' . $branch['id'])) ?>" class="btn btn-sm btn-outline-primary">Sua</a>
-                                <a href="<?= e(url('/rooms?branch_id=' . $branch['id'])) ?>" class="btn btn-sm btn-outline-secondary">Xem phong</a>
-                                <form method="POST" action="<?= e(url('/branches/delete')) ?>" onsubmit="return confirm('Ban chac chan muon xoa chi nhanh nay?');">
+                                <a href="<?= e(url('/branches?edit=' . $branch['id'])) ?>" class="btn btn-sm btn-outline-primary">Sửa</a>
+                                <a href="<?= e(url('/rooms?branch_id=' . $branch['id'])) ?>" class="btn btn-sm btn-outline-secondary">Xem phòng</a>
+                                <form method="POST" action="<?= e(url('/branches/delete')) ?>" onsubmit="return confirm('Bạn chắc chắn muốn xóa chi nhánh này?');">
                                     <input type="hidden" name="id" value="<?= e((string) $branch['id']) ?>">
                                     <input type="hidden" name="redirect_to" value="/branches">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">Xoa</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
                                 </form>
                             </div>
                         </td>

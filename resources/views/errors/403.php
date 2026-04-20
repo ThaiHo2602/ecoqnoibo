@@ -10,9 +10,9 @@
 <body class="error-body">
     <div class="error-card">
         <div class="display-4 fw-bold">403</div>
-        <h1 class="h3 mt-3">Khong co quyen truy cap</h1>
-        <p class="text-muted"><?= e($message ?: 'Ban khong duoc phep vao khu vuc nay.') ?></p>
-        <a href="<?= e(url('/')) ?>" class="btn btn-primary">Quay ve trang chu</a>
+        <h1 class="h3 mt-3">Không có quyền truy cập</h1>
+        <p class="text-muted"><?= e($message ?: 'Bạn không được phép vào khu vực này.') ?></p>
+        <a href="<?= e(url('/')) ?>" class="btn btn-primary">Quay về trang chủ</a>
     </div>
 </body>
 </html>

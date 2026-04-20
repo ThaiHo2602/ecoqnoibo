@@ -2,8 +2,8 @@
     <div class="panel-card">
         <div class="panel-header">
             <div>
-                <h3><?= $editSystem ? 'Cap nhat he thong' : 'Them he thong moi' ?></h3>
-                <p class="panel-subtitle mb-0">Quan ly danh sach he thong va tinh trang hoat dong.</p>
+                <h3><?= $editSystem ? 'Cập nhật hệ thống' : 'Thêm hệ thống mới' ?></h3>
+                <p class="panel-subtitle mb-0">Quản lý danh sách hệ thống và tình trạng hoạt động.</p>
             </div>
         </div>
 
@@ -13,20 +13,20 @@
             <?php endif; ?>
 
             <div>
-                <label class="form-label">Ten he thong</label>
+                <label class="form-label">Tên hệ thống</label>
                 <input
                     type="text"
                     name="name"
                     class="form-control"
                     value="<?= e($editSystem['name'] ?? '') ?>"
-                    placeholder="Vi du: Long Thinh"
+                    placeholder="Ví dụ: Long Thịnh"
                     required
                 >
             </div>
 
             <div>
-                <label class="form-label">Mo ta ngan</label>
-                <textarea name="description" class="form-control" rows="4" placeholder="Mo ta them neu can"><?= e($editSystem['description'] ?? '') ?></textarea>
+                <label class="form-label">Mô tả ngắn</label>
+                <textarea name="description" class="form-control" rows="4" placeholder="Mô tả thêm nếu cần"><?= e($editSystem['description'] ?? '') ?></textarea>
             </div>
 
             <div class="form-check">
@@ -38,13 +38,13 @@
                     name="is_active"
                     <?= ! isset($editSystem['is_active']) || (int) $editSystem['is_active'] === 1 ? 'checked' : '' ?>
                 >
-                <label class="form-check-label" for="systemIsActive">He thong dang hoat dong</label>
+                <label class="form-check-label" for="systemIsActive">Hệ thống đang hoạt động</label>
             </div>
 
             <div class="d-flex gap-2 flex-wrap">
-                <button type="submit" class="btn btn-primary"><?= $editSystem ? 'Luu cap nhat' : 'Them he thong' ?></button>
+                <button type="submit" class="btn btn-primary"><?= $editSystem ? 'Lưu cập nhật' : 'Thêm hệ thống' ?></button>
                 <?php if ($editSystem): ?>
-                    <a href="<?= e(url('/systems')) ?>" class="btn btn-outline-secondary">Bo chinh sua</a>
+                    <a href="<?= e(url('/systems')) ?>" class="btn btn-outline-secondary">Bỏ chỉnh sửa</a>
                 <?php endif; ?>
             </div>
         </form>
@@ -53,8 +53,8 @@
     <div class="panel-card">
         <div class="panel-header">
             <div>
-                <h3><?= $editBranch ? 'Sua nhanh chi nhanh' : 'Them nhanh chi nhanh' ?></h3>
-                <p class="panel-subtitle mb-0">Tao chi nhanh ngay trong trang he thong de dung voi flow nghiep vu cua ban.</p>
+                <h3><?= $editBranch ? 'Sửa nhanh chi nhánh' : 'Thêm nhanh chi nhánh' ?></h3>
+                <p class="panel-subtitle mb-0">Tạo chi nhánh ngay trong trang hệ thống để đúng với flow nghiệp vụ của bạn.</p>
             </div>
         </div>
 
@@ -65,9 +65,9 @@
             <input type="hidden" name="redirect_to" value="/systems">
 
             <div>
-                <label class="form-label">He thong</label>
+                <label class="form-label">Hệ thống</label>
                 <select name="system_id" class="form-select" required>
-                    <option value="">Chon he thong</option>
+                    <option value="">Chọn hệ thống</option>
                     <?php foreach ($systems as $system): ?>
                         <option value="<?= e((string) $system['id']) ?>" <?= (int) ($editBranch['system_id'] ?? 0) === (int) $system['id'] ? 'selected' : '' ?>>
                             <?= e($system['name']) ?>
@@ -77,14 +77,14 @@
             </div>
 
             <div>
-                <label class="form-label">Ten chi nhanh</label>
-                <input type="text" name="name" class="form-control" value="<?= e($editBranch['name'] ?? '') ?>" placeholder="Vi du: Long Thinh 1" required>
+                <label class="form-label">Tên chi nhánh</label>
+                <input type="text" name="name" class="form-control" value="<?= e($editBranch['name'] ?? '') ?>" placeholder="Ví dụ: Long Thịnh 1" required>
             </div>
 
             <div>
-                <label class="form-label">Quan</label>
+                <label class="form-label">Quận</label>
                 <select name="district_id" class="form-select" required>
-                    <option value="">Chon quan</option>
+                    <option value="">Chọn quận</option>
                     <?php foreach ($districts as $district): ?>
                         <option value="<?= e((string) $district['id']) ?>" <?= (int) ($editBranch['district_id'] ?? 0) === (int) $district['id'] ? 'selected' : '' ?>>
                             <?= e($district['name']) ?>
@@ -94,19 +94,19 @@
             </div>
 
             <div>
-                <label class="form-label">Dia chi</label>
-                <input type="text" name="address" class="form-control" value="<?= e($editBranch['address'] ?? '') ?>" placeholder="Nhap dia chi chi nhanh" required>
+                <label class="form-label">Địa chỉ</label>
+                <input type="text" name="address" class="form-control" value="<?= e($editBranch['address'] ?? '') ?>" placeholder="Nhập địa chỉ chi nhánh" required>
             </div>
 
             <div>
-                <label class="form-label">So dien thoai quan ly</label>
-                <input type="text" name="manager_phone" class="form-control" value="<?= e($editBranch['manager_phone'] ?? '') ?>" placeholder="Khong bat buoc">
+                <label class="form-label">Số điện thoại quản lý</label>
+                <input type="text" name="manager_phone" class="form-control" value="<?= e($editBranch['manager_phone'] ?? '') ?>" placeholder="Không bắt buộc">
             </div>
 
             <div class="d-flex gap-2 flex-wrap">
-                <button type="submit" class="btn btn-primary"><?= $editBranch ? 'Luu chi nhanh' : 'Them chi nhanh' ?></button>
+                <button type="submit" class="btn btn-primary"><?= $editBranch ? 'Lưu chi nhánh' : 'Thêm chi nhánh' ?></button>
                 <?php if ($editBranch): ?>
-                    <a href="<?= e(url('/systems')) ?>" class="btn btn-outline-secondary">Bo chinh sua</a>
+                    <a href="<?= e(url('/systems')) ?>" class="btn btn-outline-secondary">Bỏ chỉnh sửa</a>
                 <?php endif; ?>
             </div>
         </form>
@@ -116,10 +116,10 @@
 <section class="panel-card mt-4">
     <div class="panel-header">
         <div>
-            <h3>Danh sach he thong</h3>
-            <p class="panel-subtitle mb-0">Bam vao tung he thong de xem cac chi nhanh ben trong va thao tac nhanh.</p>
+            <h3>Danh sách hệ thống</h3>
+            <p class="panel-subtitle mb-0">Bấm vào từng hệ thống để xem các chi nhánh bên trong và thao tác nhanh.</p>
         </div>
-        <span class="badge text-bg-light"><?= e((string) count($systems)) ?> he thong</span>
+        <span class="badge text-bg-light"><?= e((string) count($systems)) ?> hệ thống</span>
     </div>
 
     <div class="accordion-stack">
@@ -131,24 +131,24 @@
                         <div class="d-flex align-items-center gap-2 flex-wrap">
                             <h4 class="mb-0"><?= e($system['name']) ?></h4>
                             <span class="status-pill <?= (int) $system['is_active'] === 1 ? 'status-approved' : 'status-rejected' ?>">
-                                <?= (int) $system['is_active'] === 1 ? 'dang hoat dong' : 'tam dung' ?>
+                                <?= (int) $system['is_active'] === 1 ? 'Đang hoạt động' : 'Tạm dừng' ?>
                             </span>
                         </div>
-                        <p class="text-muted mb-0 mt-2"><?= e($system['description'] ?: 'Chua co mo ta cho he thong nay.') ?></p>
+                        <p class="text-muted mb-0 mt-2"><?= e($system['description'] ?: 'Chưa có mô tả cho hệ thống này.') ?></p>
                     </div>
 
                     <div class="accordion-meta">
-                        <div><strong><?= e((string) $system['branch_count']) ?></strong><span>Chi nhanh</span></div>
-                        <div><strong><?= e((string) $system['room_count']) ?></strong><span>Phong</span></div>
+                        <div><strong><?= e((string) $system['branch_count']) ?></strong><span>Chi nhánh</span></div>
+                        <div><strong><?= e((string) $system['room_count']) ?></strong><span>Phòng</span></div>
                     </div>
                 </div>
 
                 <div class="accordion-actions">
-                    <a href="<?= e(url('/systems?edit_system=' . $system['id'])) ?>" class="btn btn-sm btn-outline-primary">Sua he thong</a>
-                    <a href="<?= e(url('/branches?system_id=' . $system['id'])) ?>" class="btn btn-sm btn-outline-secondary">Xem o trang chi nhanh</a>
-                    <form method="POST" action="<?= e(url('/systems/delete')) ?>" onsubmit="return confirm('Ban chac chan muon xoa he thong nay?');">
+                    <a href="<?= e(url('/systems?edit_system=' . $system['id'])) ?>" class="btn btn-sm btn-outline-primary">Sửa hệ thống</a>
+                    <a href="<?= e(url('/branches?system_id=' . $system['id'])) ?>" class="btn btn-sm btn-outline-secondary">Xem ở trang chi nhánh</a>
+                    <form method="POST" action="<?= e(url('/systems/delete')) ?>" onsubmit="return confirm('Bạn chắc chắn muốn xóa hệ thống này?');">
                         <input type="hidden" name="id" value="<?= e((string) $system['id']) ?>">
-                        <button type="submit" class="btn btn-sm btn-outline-danger">Xoa</button>
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
                     </form>
                 </div>
 
@@ -158,11 +158,11 @@
                             <table class="table align-middle mb-0">
                                 <thead>
                                     <tr>
-                                        <th>Chi nhanh</th>
-                                        <th>Quan</th>
-                                        <th>Dia chi</th>
-                                        <th>SDT quan ly</th>
-                                        <th class="text-end">Thao tac</th>
+                                        <th>Chi nhánh</th>
+                                        <th>Quận</th>
+                                        <th>Địa chỉ</th>
+                                        <th>SDT quản lý</th>
+                                        <th class="text-end">Thao tác</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -174,11 +174,11 @@
                                             <td><?= e($branch['manager_phone'] ?: '-') ?></td>
                                             <td class="text-end">
                                                 <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
-                                                    <a href="<?= e(url('/systems?edit_branch=' . $branch['id'])) ?>" class="btn btn-sm btn-outline-primary">Sua</a>
-                                                    <form method="POST" action="<?= e(url('/branches/delete')) ?>" onsubmit="return confirm('Ban chac chan muon xoa chi nhanh nay?');">
+                                                    <a href="<?= e(url('/systems?edit_branch=' . $branch['id'])) ?>" class="btn btn-sm btn-outline-primary">Sửa</a>
+                                                    <form method="POST" action="<?= e(url('/branches/delete')) ?>" onsubmit="return confirm('Bạn chắc chắn muốn xóa chi nhánh này?');">
                                                         <input type="hidden" name="id" value="<?= e((string) $branch['id']) ?>">
                                                         <input type="hidden" name="redirect_to" value="/systems">
-                                                        <button type="submit" class="btn btn-sm btn-outline-danger">Xoa</button>
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
                                                     </form>
                                                 </div>
                                             </td>
@@ -189,7 +189,7 @@
                         </div>
                     <?php else: ?>
                         <div class="empty-state">
-                            He thong nay chua co chi nhanh nao. Ban co the them nhanh o form ben tren.
+                            Hệ thống này chưa có chi nhánh nào. Bạn có thể thêm nhanh ở form bên trên.
                         </div>
                     <?php endif; ?>
                 </div>

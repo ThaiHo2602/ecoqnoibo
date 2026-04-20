@@ -16,10 +16,14 @@ $furnitureLabels = [
 
 <section class="listing-hero">
     <div>
-        <div class="eyebrow">Lựa chọn chỗ ở hot</div>
-        <h2 class="listing-title">Tìm phòng phù hợp thật nhanh cho khách ngay trong hệ thống nội bộ</h2>
-        <p class="listing-subtitle">Lọc theo quận, mức giá, trạng thái và nội thất. Bấm vào từng phòng để xem chi tiết đầy đủ, hình ảnh, video và gửi yêu cầu lock.</p>
+        <div class="eyebrow">Lựa chọn chỗ ở nổi bật</div>
+        <h2 class="listing-title">Kho phòng nội bộ giúp đội ngũ tư vấn chốt khách nhanh, rõ thông tin và đúng nhu cầu.</h2>
+        <p class="listing-subtitle">
+            Lọc theo quận, mức giá, trạng thái, nội thất, hệ thống và chi nhánh. Bấm vào từng phòng để xem
+            chi tiết hình ảnh, video, thông số phòng và thao tác lock ngay trên hệ thống.
+        </p>
     </div>
+
     <div class="listing-summary">
         <div><span>Tổng phòng</span><strong><?= e((string) $roomStats['total']) ?></strong></div>
         <div><span>Chưa lock</span><strong><?= e((string) $roomStats['chua_lock']) ?></strong></div>
@@ -32,7 +36,7 @@ $furnitureLabels = [
     <div class="panel-header">
         <div>
             <h3>Bộ lọc phòng</h3>
-            <p class="panel-subtitle mb-0">Ưu tiên các bộ lọc nhân viên dùng nhiều nhất khi tư vấn khách.</p>
+            <p class="panel-subtitle mb-0">Tối ưu cho luồng tìm phòng nhanh khi làm việc với khách hàng.</p>
         </div>
     </div>
 
@@ -86,7 +90,7 @@ $furnitureLabels = [
     <?php if (! $rooms): ?>
         <div class="panel-card empty-state-card">
             <h3 class="h5 mb-2">Không có phòng phù hợp</h3>
-            <p class="text-muted mb-0">Hãy thử đổi bộ lọc để tìm thêm phòng phù hợp với khách.</p>
+            <p class="text-muted mb-0">Hãy thử điều chỉnh bộ lọc để xem thêm các lựa chọn khác.</p>
         </div>
     <?php endif; ?>
 

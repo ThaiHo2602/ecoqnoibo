@@ -4,26 +4,41 @@ use App\Core\Session;
 
 $errorMessage = Session::getFlash('error');
 $successMessage = Session::getFlash('success');
+$logoUrl = asset('assets/images/logo.png');
 ?>
 <div class="auth-wrapper">
     <div class="auth-panel">
         <div class="auth-hero">
-            <div class="eyebrow">EcoQ Noi Bo</div>
-            <h1>Hệ thống quản lý trọ cho công ty môi giới</h1>
-            <p>Đăng nhập để quản lý hệ thống, chi nhánh, phòng, duyệt lock và theo dõi hoạt động nội bộ.</p>
+            <div class="auth-brand-row">
+                <img
+                    src="<?= e($logoUrl) ?>"
+                    alt="Eco-Q House"
+                    class="auth-logo"
+                    onerror="this.style.display='none';"
+                >
+                <div>
+                    <div class="eyebrow">Eco-Q House nội bộ</div>
+                    <h1>Hệ thống quản lý trọ dành cho đội ngũ môi giới chuyên nghiệp.</h1>
+                </div>
+            </div>
+
+            <p>
+                Theo dõi hệ thống, chi nhánh, phòng, duyệt lock, khách hàng và toàn bộ lịch trình làm việc
+                trên một giao diện hiện đại, rõ ràng và dễ thao tác.
+            </p>
 
             <div class="auth-points">
                 <div class="auth-point">
                     <strong>Phân quyền rõ ràng</strong>
-                    <span>Giám đốc, quản lý, nhân viên với luồng công việc tách biệt.</span>
+                    <span>Giám đốc, quản lý, nhân viên và cộng tác viên đều có luồng làm việc riêng.</span>
                 </div>
                 <div class="auth-point">
-                    <strong>Bộ lọc mạnh</strong>
-                    <span>Sẵn sàng cho tìm kiếm theo quận, giá, trạng thái, nội thất.</span>
+                    <strong>Tìm phòng thật nhanh</strong>
+                    <span>Lọc mạnh theo quận, giá, nội thất, trạng thái và chi nhánh để tư vấn khách hiệu quả.</span>
                 </div>
                 <div class="auth-point">
-                    <strong>Quy trình lock phòng</strong>
-                    <span>Nhân viên gửi lock, quản lý xét duyệt minh bạch.</span>
+                    <strong>Quy trình lock minh bạch</strong>
+                    <span>Nhân viên gửi yêu cầu, quản lý duyệt nhanh, lịch sử thao tác được ghi nhận đầy đủ.</span>
                 </div>
             </div>
         </div>

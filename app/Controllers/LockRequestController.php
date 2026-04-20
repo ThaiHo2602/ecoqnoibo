@@ -106,10 +106,11 @@ class LockRequestController
 
         $roomId = (int) ($_POST['room_id'] ?? 0);
         $requestNote = trim($_POST['request_note'] ?? '');
+        $returnTo = $this->resolveReturnTo();
 
         if ($roomId <= 0) {
             Session::flash('error', 'Phòng không hợp lệ để gửi yêu cầu lock.');
-            redirect('/rooms');
+            redirect($returnTo);
         }
 
         $connection = Database::connection();
@@ -119,12 +120,12 @@ class LockRequestController
 
         if (! $room) {
             Session::flash('error', 'Phòng không tồn tại.');
-            redirect('/rooms');
+            redirect($returnTo);
         }
 
         if ($room['status'] !== 'chua_lock') {
-            Session::flash('error', 'Chỉ có thể gửi lock với phòng đang ở trạng thái chưa lock.');
-            redirect('/rooms');
+            Session::flash('error', 'Chỉ có thể gửi lock với phòng đang ở trạng thái Chưa lock.');
+            redirect($returnTo);
         }
 
         $pendingStatement = $connection->prepare(
@@ -134,7 +135,7 @@ class LockRequestController
         $pendingStatement->execute(['room_id' => $roomId]);
         if ((int) $pendingStatement->fetchColumn() > 0) {
             Session::flash('error', 'Phòng này đã có yêu cầu lock đang chờ duyệt.');
-            redirect('/rooms');
+            redirect($returnTo);
         }
 
         $currentUser = Auth::user();
@@ -156,13 +157,13 @@ class LockRequestController
             $connection->commit();
 
             activity_log((int) $currentUser['id'], 'request_lock', 'lock_requests', 'Gửi yêu cầu lock phòng #' . $roomId);
-            Session::flash('success', 'Đã gửi yêu cầu lock phòng thành công. Phòng chuyển sang trạng thái đang giữ.');
+            Session::flash('success', 'Đã gửi yêu cầu lock phòng thành công. Phòng đã chuyển sang trạng thái Đang giữ.');
         } catch (\Throwable) {
             $connection->rollBack();
             Session::flash('error', 'Gửi yêu cầu lock thất bại. Vui lòng thử lại.');
         }
 
-        redirect('/rooms');
+        redirect($returnTo);
     }
 
     public function approve(): void
@@ -240,12 +241,23 @@ class LockRequestController
             activity_log((int) $currentUser['id'], $logAction, 'lock_requests', 'Xử lý yêu cầu #' . $requestId . ' => ' . $requestStatus);
             Session::flash('success', $requestStatus === 'approved'
                 ? 'Đã duyệt lock phòng thành công.'
-                : 'Đã từ chối yêu cầu lock. Phòng đã quay về trạng thái chưa lock.');
+                : 'Đã từ chối yêu cầu lock. Phòng đã quay về trạng thái trống.');
         } catch (\Throwable) {
             $connection->rollBack();
             Session::flash('error', 'Xử lý yêu cầu lock thất bại. Vui lòng thử lại.');
         }
 
         redirect('/lock-requests');
+    }
+
+    private function resolveReturnTo(): string
+    {
+        $returnTo = trim((string) ($_POST['return_to'] ?? ''));
+
+        if ($returnTo !== '' && str_starts_with($returnTo, '/')) {
+            return $returnTo;
+        }
+
+        return '/';
     }
 }

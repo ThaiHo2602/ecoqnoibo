@@ -146,8 +146,8 @@ $lockRequestLabels = [
         <div class="panel-card">
             <div class="panel-header">
                 <div>
-                    <h3><?= $editRoom ? 'Cap nhat phong' : 'Them phong moi' ?></h3>
-                    <p class="panel-subtitle mb-0">Form chi tiet phong va upload nhieu anh, video.</p>
+                    <h3><?= $editRoom ? 'Cập nhật phòng' : 'Thêm phòng mới' ?></h3>
+                    <p class="panel-subtitle mb-0">Form chi tiết phòng và upload nhiều ảnh, video.</p>
                 </div>
             </div>
 
@@ -157,7 +157,7 @@ $lockRequestLabels = [
                 <?php endif; ?>
 
                 <div>
-                    <label class="form-label">Chi nhanh</label>
+                    <label class="form-label">Chi nhánh</label>
                     <select name="branch_id" class="form-select" required>
                         <option value="">Chon chi nhanh</option>
                         <?php foreach ($systems as $system): ?>
@@ -298,11 +298,11 @@ $lockRequestLabels = [
         <div class="panel-card">
             <div class="panel-header">
                 <div>
-                    <h3>Goc thao tac nhanh cho nhan vien</h3>
-                    <p class="panel-subtitle mb-0">Bam `Xem chi tiet` tren tung phong de mo popup day du hinh anh, video, chi phi va gui yeu cau lock.</p>
+                    <h3>Góc thao tác nhanh cho nhân viên</h3>
+                    <p class="panel-subtitle mb-0">Bấm `Xem chi tiết` trên từng phòng để mở popup đầy đủ hình ảnh, video, chi phí và gửi yêu cầu lock.</p>
                 </div>
             </div>
-            <div class="empty-state">Quy trinh hien tai: `Xem chi tiet` -> `Gui yeu cau lock` -> phong sang `dang giu` -> quan ly/giam doc vao trang `Yeu cau lock` de duyet.</div>
+            <div class="empty-state">Quy trình hiện tại: `Xem chi tiết` -> `Gửi yêu cầu lock` -> phòng sang `Đang giữ` -> quản lý/giám đốc vào trang `Yêu cầu lock` để duyệt.</div>
         </div>
     <?php endif; ?>
 </section>
@@ -310,32 +310,32 @@ $lockRequestLabels = [
 <section class="panel-card mt-4">
     <div class="panel-header">
         <div>
-            <h3>Danh sach phong</h3>
-            <p class="panel-subtitle mb-0">Hien theo dang list, chua show hinh o list, dung dung voi mong muon hien tai.</p>
+            <h3>Danh sách phòng</h3>
+            <p class="panel-subtitle mb-0">Hiển thị dạng list cho khu vực quản trị, chưa show hình ở list để quản lý thao tác nhanh.</p>
         </div>
-        <span class="badge text-bg-light"><?= e((string) count($rooms)) ?> phong</span>
+        <span class="badge text-bg-light"><?= e((string) count($rooms)) ?> phòng</span>
     </div>
 
     <div class="table-responsive">
         <table class="table align-middle mb-0">
             <thead>
                 <tr>
-                    <th>So phong</th>
-                    <th>Chi nhanh</th>
-                    <th>Quan</th>
-                    <th>Gia</th>
-                    <th>Loai phong</th>
-                    <th>Trang thai</th>
-                    <th>Noi that</th>
+                    <th>Số phòng</th>
+                    <th>Chi nhánh</th>
+                    <th>Quận</th>
+                    <th>Giá</th>
+                    <th>Loại phòng</th>
+                    <th>Trạng thái</th>
+                    <th>Nội thất</th>
                     <th>Media</th>
-                    <th class="text-end">Thao tac</th>
+                    <th class="text-end">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (! $rooms): ?>
                     <tr>
                         <td colspan="9">
-                            <div class="empty-state my-3">Chua co phong nao phu hop voi bo loc hien tai.</div>
+                            <div class="empty-state my-3">Chưa có phòng nào phù hợp với bộ lọc hiện tại.</div>
                         </td>
                     </tr>
                 <?php endif; ?>
@@ -351,7 +351,7 @@ $lockRequestLabels = [
                             <div class="text-muted small"><?= e($room['system_name']) ?></div>
                         </td>
                         <td><?= e($room['district_name']) ?></td>
-                        <td><?= e(number_format((float) $room['price'], 0, ',', '.')) ?> VND</td>
+                        <td><?= e(number_format((float) $room['price'], 0, ',', '.')) ?> đ</td>
                         <td><?= e($roomTypeLabels[$room['room_type']] ?? $room['room_type']) ?></td>
                         <td><span class="status-pill status-<?= e($room['status']) ?>"><?= e($statusLabels[$room['status']] ?? $room['status']) ?></span></td>
                         <td><?= e($furnitureLabels[$room['furniture_status']] ?? $room['furniture_status']) ?></td>
@@ -364,16 +364,16 @@ $lockRequestLabels = [
                                     data-bs-toggle="modal"
                                     data-bs-target="#roomDetailModal<?= e((string) $room['id']) ?>"
                                 >
-                                    Xem chi tiet
+                                    Xem chi tiết
                                 </button>
                                 <?php if ($canManage): ?>
-                                    <a href="<?= e(url('/rooms?edit=' . $room['id'])) ?>" class="btn btn-sm btn-outline-primary">Sua</a>
-                                    <form method="POST" action="<?= e(url('/rooms/delete')) ?>" onsubmit="return confirm('Ban chac chan muon xoa phong nay?');">
+                                    <a href="<?= e(url('/rooms?edit=' . $room['id'])) ?>" class="btn btn-sm btn-outline-primary">Sửa</a>
+                                    <form method="POST" action="<?= e(url('/rooms/delete')) ?>" onsubmit="return confirm('Bạn chắc chắn muốn xóa phòng này?');">
                                         <input type="hidden" name="id" value="<?= e((string) $room['id']) ?>">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">Xoa</button>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
                                     </form>
                                 <?php else: ?>
-                                    <span class="text-muted small">Khong co thao tac</span>
+                                    <span class="text-muted small">Không có thao tác</span>
                                 <?php endif; ?>
                             </div>
                         </td>
@@ -394,8 +394,8 @@ $lockRequestLabels = [
             <div class="modal-content room-modal">
                 <div class="modal-header border-0 pb-0">
                     <div>
-                        <div class="eyebrow">Chi tiet phong</div>
-                        <h2 class="modal-title h4 mt-2 mb-1">Phong <?= e($room['room_number']) ?> - <?= e($room['branch_name']) ?></h2>
+                        <div class="eyebrow">Chi tiết phòng</div>
+                        <h2 class="modal-title h4 mt-2 mb-1">Phòng <?= e($room['room_number']) ?> - <?= e($room['branch_name']) ?></h2>
                         <div class="text-muted"><?= e($room['system_name'] . ' - ' . $room['district_name']) ?></div>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -407,8 +407,8 @@ $lockRequestLabels = [
                             <div class="modal-media-panel">
                                 <div class="panel-header mb-3">
                                     <div>
-                                        <h3>Hinh anh va video</h3>
-                                        <p class="panel-subtitle mb-0">Media cua phong nay duoc hien ngay trong popup.</p>
+                                        <h3>Hình ảnh và video</h3>
+                                        <p class="panel-subtitle mb-0">Media của phòng này được hiển thị ngay trong popup.</p>
                                     </div>
                                 </div>
 
@@ -426,7 +426,7 @@ $lockRequestLabels = [
                                         <?php endforeach; ?>
                                     </div>
                                 <?php else: ?>
-                                    <div class="empty-state">Phong nay chua co media nao.</div>
+                                    <div class="empty-state">Phòng này chưa có media nào.</div>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -439,31 +439,31 @@ $lockRequestLabels = [
                                     <span class="detail-tag"><?= e($roomTypeLabels[$room['room_type']] ?? $room['room_type']) ?></span>
                                     <span class="detail-tag"><?= e($furnitureLabels[$room['furniture_status']] ?? $room['furniture_status']) ?></span>
                                     <span class="detail-tag"><?= e($windowLabels[$room['window_type']] ?? $room['window_type']) ?></span>
-                                    <span class="detail-tag"><?= (int) $room['has_balcony'] === 1 ? 'Co ban cong' : 'Khong ban cong' ?></span>
+                                    <span class="detail-tag"><?= (int) $room['has_balcony'] === 1 ? 'Có ban công' : 'Không ban công' ?></span>
                                 </div>
                             </div>
 
                             <div class="detail-card mt-3">
                                 <div class="panel-header mb-3">
                                     <div>
-                                        <h3>Thong tin chi tiet</h3>
-                                        <p class="panel-subtitle mb-0">Tong hop day du cac chi phi va dac diem phong.</p>
+                                        <h3>Thông tin chi tiết</h3>
+                                        <p class="panel-subtitle mb-0">Tổng hợp đầy đủ các chi phí và đặc điểm phòng.</p>
                                     </div>
                                 </div>
 
                                 <div class="detail-list">
-                                    <div><span>He thong</span><strong><?= e($room['system_name']) ?></strong></div>
-                                    <div><span>Chi nhanh</span><strong><?= e($room['branch_name']) ?></strong></div>
-                                    <div><span>Quan</span><strong><?= e($room['district_name']) ?></strong></div>
-                                    <div><span>Tien dien</span><strong><?= e(number_format((float) $room['electricity_fee'], 0, ',', '.')) ?></strong></div>
-                                    <div><span>Tien nuoc</span><strong><?= e(number_format((float) $room['water_fee'], 0, ',', '.')) ?></strong></div>
-                                    <div><span>Phi dich vu</span><strong><?= e(number_format((float) $room['service_fee'], 0, ',', '.')) ?></strong></div>
-                                    <div><span>Phi gui xe</span><strong><?= e(number_format((float) $room['parking_fee'], 0, ',', '.')) ?></strong></div>
+                                    <div><span>Hệ thống</span><strong><?= e($room['system_name']) ?></strong></div>
+                                    <div><span>Chi nhánh</span><strong><?= e($room['branch_name']) ?></strong></div>
+                                    <div><span>Quận</span><strong><?= e($room['district_name']) ?></strong></div>
+                                    <div><span>Tiền điện</span><strong><?= e(number_format((float) $room['electricity_fee'], 0, ',', '.')) ?></strong></div>
+                                    <div><span>Tiền nước</span><strong><?= e(number_format((float) $room['water_fee'], 0, ',', '.')) ?></strong></div>
+                                    <div><span>Phí dịch vụ</span><strong><?= e(number_format((float) $room['service_fee'], 0, ',', '.')) ?></strong></div>
+                                    <div><span>Phí gửi xe</span><strong><?= e(number_format((float) $room['parking_fee'], 0, ',', '.')) ?></strong></div>
                                 </div>
 
                                 <div class="detail-note mt-3">
-                                    <div class="small text-uppercase text-muted fw-semibold mb-2">Ghi chu tong</div>
-                                    <div><?= e($room['note'] ?: 'Chua co ghi chu cho phong nay.') ?></div>
+                                    <div class="small text-uppercase text-muted fw-semibold mb-2">Ghi chú tổng</div>
+                                    <div><?= e($room['note'] ?: 'Chưa có ghi chú cho phòng này.') ?></div>
                                 </div>
                             </div>
 
@@ -471,25 +471,25 @@ $lockRequestLabels = [
                                 <div class="detail-card mt-3">
                                     <div class="panel-header mb-3">
                                         <div>
-                                            <h3>Thong tin lock gan nhat</h3>
-                                            <p class="panel-subtitle mb-0">Giup nhan vien va quan ly nhin nhanh tinh hinh xu ly.</p>
+                                            <h3>Thông tin lock gần nhất</h3>
+                                            <p class="panel-subtitle mb-0">Giúp nhân viên và quản lý nhìn nhanh tình hình xử lý.</p>
                                         </div>
                                     </div>
 
                                     <div class="detail-list">
-                                        <div><span>Trang thai</span><strong><?= e($lockRequestLabels[$latestLock['request_status']] ?? $latestLock['request_status']) ?></strong></div>
-                                        <div><span>Nguoi gui</span><strong><?= e($latestLock['requester_name']) ?></strong></div>
-                                        <div><span>Thoi gian gui</span><strong><?= e($latestLock['requested_at']) ?></strong></div>
+                                        <div><span>Trạng thái</span><strong><?= e($lockRequestLabels[$latestLock['request_status']] ?? $latestLock['request_status']) ?></strong></div>
+                                        <div><span>Người gửi</span><strong><?= e($latestLock['requester_name']) ?></strong></div>
+                                        <div><span>Thời gian gửi</span><strong><?= e($latestLock['requested_at']) ?></strong></div>
                                     </div>
                                     <?php if ($latestLock['request_note']): ?>
                                         <div class="detail-note mt-3">
-                                            <div class="small text-uppercase text-muted fw-semibold mb-2">Ghi chu yeu cau</div>
+                                            <div class="small text-uppercase text-muted fw-semibold mb-2">Ghi chú yêu cầu</div>
                                             <div><?= e($latestLock['request_note']) ?></div>
                                         </div>
                                     <?php endif; ?>
                                     <?php if ($latestLock['decision_note']): ?>
                                         <div class="detail-note mt-3">
-                                            <div class="small text-uppercase text-muted fw-semibold mb-2">Ghi chu xu ly</div>
+                                            <div class="small text-uppercase text-muted fw-semibold mb-2">Ghi chú xử lý</div>
                                             <div><?= e($latestLock['decision_note']) ?></div>
                                         </div>
                                     <?php endif; ?>
@@ -500,8 +500,8 @@ $lockRequestLabels = [
                                 <div class="detail-card mt-3">
                                     <div class="panel-header mb-3">
                                         <div>
-                                            <h3>Thao tac nhan vien</h3>
-                                            <p class="panel-subtitle mb-0">Gui yeu cau lock ngay trong popup nay.</p>
+                                            <h3>Thao tác nhân viên</h3>
+                                            <p class="panel-subtitle mb-0">Gửi yêu cầu lock ngay trong popup này.</p>
                                         </div>
                                     </div>
 
@@ -509,21 +509,21 @@ $lockRequestLabels = [
                                         <form method="POST" action="<?= e(url('/lock-requests/store')) ?>" class="d-grid gap-3">
                                             <input type="hidden" name="room_id" value="<?= e((string) $room['id']) ?>">
                                             <div>
-                                                <label class="form-label">Ghi chu lock</label>
-                                                <textarea name="request_note" class="form-control" rows="3" placeholder="Vi du: Khach da hen xem phong, du kien dat coc toi nay"></textarea>
+                                                <label class="form-label">Ghi chú lock</label>
+                                                <textarea name="request_note" class="form-control" rows="3" placeholder="Ví dụ: Khách đã hẹn xem phòng, dự kiến đặt cọc tối nay"></textarea>
                                             </div>
-                                            <button type="submit" class="btn btn-warning">Gui yeu cau lock</button>
+                                            <button type="submit" class="btn btn-warning">Gửi yêu cầu lock</button>
                                         </form>
                                     <?php else: ?>
-                                        <div class="empty-state">Phong nay hien dang `<?= e(strtolower($statusLabels[$room['status']] ?? $room['status'])) ?>`, nen chua the gui them mot yeu cau lock moi.</div>
+                                        <div class="empty-state">Phòng này hiện đang `<?= e(strtolower($statusLabels[$room['status']] ?? $room['status'])) ?>`, nên chưa thể gửi thêm một yêu cầu lock mới.</div>
                                     <?php endif; ?>
                                 </div>
                             <?php endif; ?>
 
                             <?php if ($canManage): ?>
                                 <div class="d-flex gap-2 flex-wrap mt-3">
-                                    <a href="<?= e(url('/rooms?edit=' . $room['id'])) ?>" class="btn btn-primary">Chinh sua phong nay</a>
-                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Dong popup</button>
+                                    <a href="<?= e(url('/rooms?edit=' . $room['id'])) ?>" class="btn btn-primary">Chỉnh sửa phòng này</a>
+                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng popup</button>
                                 </div>
                             <?php endif; ?>
                         </div>

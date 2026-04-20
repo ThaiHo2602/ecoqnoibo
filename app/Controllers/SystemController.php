@@ -61,7 +61,7 @@ class SystemController
         }
 
         View::render('systems.index', [
-            'pageTitle' => 'He thong',
+            'pageTitle' => 'Hệ thống',
             'systems' => $systems,
             'branchesBySystem' => $branchesBySystem,
             'districts' => $districts,
@@ -80,7 +80,7 @@ class SystemController
         $isActive = isset($_POST['is_active']) ? 1 : 0;
 
         if ($name === '') {
-            Session::flash('error', 'Ten he thong khong duoc de trong.');
+            Session::flash('error', 'Tên hệ thống không được để trống.');
             redirect('/systems');
         }
 
@@ -95,13 +95,13 @@ class SystemController
                 'is_active' => $isActive,
             ]);
         } catch (\PDOException) {
-            Session::flash('error', 'Ten he thong da ton tai. Vui long dung ten khac.');
+            Session::flash('error', 'Tên hệ thống đã tồn tại. Vui lòng dùng tên khác.');
             redirect('/systems');
         }
 
         $user = Auth::user();
-        activity_log((int) $user['id'], 'create', 'systems', 'Tao he thong: ' . $name);
-        Session::flash('success', 'Da tao he thong moi thanh cong.');
+        activity_log((int) $user['id'], 'create', 'systems', 'Tạo hệ thống: ' . $name);
+        Session::flash('success', 'Đã tạo hệ thống mới thành công.');
         redirect('/systems');
     }
 
@@ -116,7 +116,7 @@ class SystemController
         $isActive = isset($_POST['is_active']) ? 1 : 0;
 
         if ($id <= 0 || $name === '') {
-            Session::flash('error', 'Thong tin he thong khong hop le.');
+            Session::flash('error', 'Thông tin hệ thống không hợp lệ.');
             redirect('/systems');
         }
 
@@ -130,13 +130,13 @@ class SystemController
                 'is_active' => $isActive,
             ]);
         } catch (\PDOException) {
-            Session::flash('error', 'Cap nhat that bai. Co the ten he thong da bi trung.');
+            Session::flash('error', 'Cập nhật thất bại. Có thể tên hệ thống đã bị trùng.');
             redirect('/systems?edit_system=' . $id);
         }
 
         $user = Auth::user();
-        activity_log((int) $user['id'], 'update', 'systems', 'Cap nhat he thong #' . $id . ': ' . $name);
-        Session::flash('success', 'Da cap nhat he thong thanh cong.');
+        activity_log((int) $user['id'], 'update', 'systems', 'Cập nhật hệ thống #' . $id . ': ' . $name);
+        Session::flash('success', 'Đã cập nhật hệ thống thành công.');
         redirect('/systems');
     }
 
@@ -147,7 +147,7 @@ class SystemController
 
         $id = (int) ($_POST['id'] ?? 0);
         if ($id <= 0) {
-            Session::flash('error', 'He thong khong hop le.');
+            Session::flash('error', 'Hệ thống không hợp lệ.');
             redirect('/systems');
         }
 
@@ -157,22 +157,22 @@ class SystemController
         $systemData = $system->fetch();
 
         if (! $systemData) {
-            Session::flash('error', 'He thong khong ton tai.');
+            Session::flash('error', 'Hệ thống không tồn tại.');
             redirect('/systems');
         }
 
         $checkStatement = $connection->prepare('SELECT COUNT(*) FROM branches WHERE system_id = :id');
         $checkStatement->execute(['id' => $id]);
         if ((int) $checkStatement->fetchColumn() > 0) {
-            Session::flash('error', 'Khong the xoa he thong khi van con chi nhanh ben trong.');
+            Session::flash('error', 'Không thể xóa hệ thống khi vẫn còn chi nhánh bên trong.');
             redirect('/systems');
         }
 
         $connection->prepare('DELETE FROM systems WHERE id = :id')->execute(['id' => $id]);
 
         $user = Auth::user();
-        activity_log((int) $user['id'], 'delete', 'systems', 'Xoa he thong #' . $id . ': ' . $systemData['name']);
-        Session::flash('success', 'Da xoa he thong thanh cong.');
+        activity_log((int) $user['id'], 'delete', 'systems', 'Xóa hệ thống #' . $id . ': ' . $systemData['name']);
+        Session::flash('success', 'Đã xóa hệ thống thành công.');
         redirect('/systems');
     }
 }

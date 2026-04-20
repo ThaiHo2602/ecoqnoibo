@@ -7,6 +7,7 @@ USE ecoq_noibo;
 SET NAMES utf8mb4;
 
 DROP TABLE IF EXISTS activity_logs;
+DROP TABLE IF EXISTS customer_leads;
 DROP TABLE IF EXISTS lock_requests;
 DROP TABLE IF EXISTS room_media;
 DROP TABLE IF EXISTS rooms;
@@ -115,6 +116,27 @@ CREATE TABLE lock_requests (
   CONSTRAINT fk_lock_requests_approved_by FOREIGN KEY (approved_by) REFERENCES users(id)
 ) ENGINE=InnoDB;
 
+CREATE TABLE customer_leads (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  created_by INT UNSIGNED NOT NULL,
+  assigned_to INT UNSIGNED NULL,
+  assigned_by INT UNSIGNED NULL,
+  customer_name VARCHAR(150) NOT NULL,
+  phone VARCHAR(20) NOT NULL,
+  note TEXT NULL,
+  planning_scope ENUM('week', 'month') NOT NULL DEFAULT 'week',
+  appointment_at DATETIME NOT NULL,
+  status ENUM('new', 'assigned', 'completed', 'canceled', 'rescheduled', 'deposited') NOT NULL DEFAULT 'new',
+  selected_room_id INT UNSIGNED NULL,
+  completed_at DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_customer_leads_created_by FOREIGN KEY (created_by) REFERENCES users(id),
+  CONSTRAINT fk_customer_leads_assigned_to FOREIGN KEY (assigned_to) REFERENCES users(id) ON DELETE SET NULL,
+  CONSTRAINT fk_customer_leads_assigned_by FOREIGN KEY (assigned_by) REFERENCES users(id) ON DELETE SET NULL,
+  CONSTRAINT fk_customer_leads_selected_room FOREIGN KEY (selected_room_id) REFERENCES rooms(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
 CREATE TABLE activity_logs (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   user_id INT UNSIGNED NULL,
@@ -129,7 +151,8 @@ CREATE TABLE activity_logs (
 INSERT INTO roles (name, display_name) VALUES
 ('director', 'Giam doc'),
 ('manager', 'Quan ly'),
-('staff', 'Nhan vien');
+('staff', 'Nhan vien'),
+('collaborator', 'Cong tac vien');
 
 INSERT INTO districts (name) VALUES
 ('Quan 1'),
@@ -141,7 +164,8 @@ INSERT INTO districts (name) VALUES
 INSERT INTO users (role_id, full_name, job_title, phone, email, username, password, account_status, last_login_at) VALUES
 ((SELECT id FROM roles WHERE name = 'director'), 'Nguyen Van Giam Doc', 'Giam doc', '0900000001', 'director@ecoq.local', 'director', '$2y$10$w.MADegCeqpOhNq5KrMS4uxPduDY9GjPGb/rJGi6i.HMBSs9PbEv.', 'active', NOW()),
 ((SELECT id FROM roles WHERE name = 'manager'), 'Tran Thi Quan Ly', 'Quan ly', '0900000002', 'manager@ecoq.local', 'manager', '$2y$10$w.MADegCeqpOhNq5KrMS4uxPduDY9GjPGb/rJGi6i.HMBSs9PbEv.', 'active', NOW()),
-((SELECT id FROM roles WHERE name = 'staff'), 'Le Van Nhan Vien', 'Nhan vien', '0900000003', 'staff@ecoq.local', 'staff', '$2y$10$w.MADegCeqpOhNq5KrMS4uxPduDY9GjPGb/rJGi6i.HMBSs9PbEv.', 'active', NOW());
+((SELECT id FROM roles WHERE name = 'staff'), 'Le Van Nhan Vien', 'Nhan vien', '0900000003', 'staff@ecoq.local', 'staff', '$2y$10$w.MADegCeqpOhNq5KrMS4uxPduDY9GjPGb/rJGi6i.HMBSs9PbEv.', 'active', NOW()),
+((SELECT id FROM roles WHERE name = 'collaborator'), 'Pham Thi Cong Tac', 'Cong tac vien', '0900000004', 'collaborator@ecoq.local', 'collaborator', '$2y$10$w.MADegCeqpOhNq5KrMS4uxPduDY9GjPGb/rJGi6i.HMBSs9PbEv.', 'active', NOW());
 
 INSERT INTO systems (name, description, is_active) VALUES
 ('Long Thinh', 'He thong tro Long Thinh', 1),
@@ -179,3 +203,18 @@ INSERT INTO activity_logs (user_id, action, module, description, ip_address) VAL
 ((SELECT id FROM users WHERE username = 'director'), 'seed_create', 'system', 'Khoi tao du lieu mau he thong va chi nhanh.', '127.0.0.1'),
 ((SELECT id FROM users WHERE username = 'manager'), 'approve_lock', 'lock_requests', 'Duyet lock phong A201.', '127.0.0.1'),
 ((SELECT id FROM users WHERE username = 'staff'), 'request_lock', 'lock_requests', 'Gui yeu cau lock phong P102.', '127.0.0.1');
+
+INSERT INTO customer_leads (
+  created_by,
+  assigned_to,
+  assigned_by,
+  customer_name,
+  phone,
+  note,
+  planning_scope,
+  appointment_at,
+  status,
+  selected_room_id
+) VALUES
+((SELECT id FROM users WHERE username = 'collaborator'), NULL, NULL, 'Khach Hang Mau 1', '0988000001', 'Hen gap vao thu hai de xem phong.', 'week', DATE_ADD(NOW(), INTERVAL 2 DAY), 'new', NULL),
+((SELECT id FROM users WHERE username = 'collaborator'), (SELECT id FROM users WHERE username = 'staff'), (SELECT id FROM users WHERE username = 'director'), 'Khach Hang Mau 2', '0988000002', 'Da duoc phan cho nhan vien theo doi.', 'month', DATE_ADD(NOW(), INTERVAL 5 DAY), 'assigned', NULL);

@@ -3,10 +3,13 @@
 require dirname(__DIR__) . '/bootstrap.php';
 
 use App\Controllers\AuthController;
+use App\Controllers\ActivityLogController;
 use App\Controllers\BranchController;
+use App\Controllers\CustomerController;
 use App\Controllers\DashboardController;
 use App\Controllers\LockRequestController;
 use App\Controllers\ProfileController;
+use App\Controllers\ReportController;
 use App\Controllers\RoomController;
 use App\Controllers\SystemController;
 use App\Controllers\UserController;
@@ -19,10 +22,13 @@ if ($basePath !== '' && str_starts_with($path, $basePath)) {
 }
 
 $authController = new AuthController();
+$activityLogController = new ActivityLogController();
 $branchController = new BranchController();
+$customerController = new CustomerController();
 $dashboardController = new DashboardController();
 $lockRequestController = new LockRequestController();
 $profileController = new ProfileController();
+$reportController = new ReportController();
 $roomController = new RoomController();
 $systemController = new SystemController();
 $userController = new UserController();
@@ -55,11 +61,19 @@ $routes = [
     'POST /rooms/store' => fn () => $roomController->store(),
     'POST /rooms/update' => fn () => $roomController->update(),
     'POST /rooms/delete' => fn () => $roomController->delete(),
+    'GET /customers' => fn () => $customerController->index(),
+    'POST /customers/store' => fn () => $customerController->store(),
+    'POST /customers/update' => fn () => $customerController->update(),
+    'POST /customers/delete' => fn () => $customerController->delete(),
+    'POST /customers/assign' => fn () => $customerController->assign(),
+    'POST /customers/progress' => fn () => $customerController->progress(),
+    'GET /reports' => fn () => $reportController->index(),
     'GET /lock-requests' => fn () => $lockRequestController->index(),
     'POST /lock-requests/store' => fn () => $lockRequestController->store(),
     'POST /lock-requests/approve' => fn () => $lockRequestController->approve(),
     'POST /lock-requests/reject' => fn () => $lockRequestController->reject(),
     'GET /users' => fn () => $userController->index(),
+    'GET /activity-logs' => fn () => $activityLogController->index(),
     'POST /users/store' => fn () => $userController->store(),
     'POST /users/update' => fn () => $userController->update(),
     'POST /users/delete' => fn () => $userController->delete(),

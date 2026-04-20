@@ -77,7 +77,7 @@ class BranchController
         }
 
         View::render('branches.index', [
-            'pageTitle' => 'Chi nhanh',
+            'pageTitle' => 'Chi nhánh',
             'systems' => $systems,
             'districts' => $districts,
             'branches' => $branches,
@@ -98,7 +98,7 @@ class BranchController
         $managerPhone = trim($_POST['manager_phone'] ?? '');
 
         if ($systemId <= 0 || $districtId <= 0 || $name === '' || $address === '') {
-            Session::flash('error', 'Vui long nhap day du thong tin chi nhanh.');
+            Session::flash('error', 'Vui lòng nhập đầy đủ thông tin chi nhánh.');
             redirect($this->redirectTarget());
         }
 
@@ -114,13 +114,13 @@ class BranchController
                 'manager_phone' => $managerPhone !== '' ? $managerPhone : null,
             ]);
         } catch (\PDOException) {
-            Session::flash('error', 'Them chi nhanh that bai. Ten chi nhanh co the da bi trung trong he thong.');
+            Session::flash('error', 'Thêm chi nhánh thất bại. Tên chi nhánh có thể đã bị trùng trong hệ thống.');
             redirect($this->redirectTarget());
         }
 
         $user = Auth::user();
-        activity_log((int) $user['id'], 'create', 'branches', 'Tao chi nhanh: ' . $name);
-        Session::flash('success', 'Da them chi nhanh thanh cong.');
+        activity_log((int) $user['id'], 'create', 'branches', 'Tạo chi nhánh: ' . $name);
+        Session::flash('success', 'Đã thêm chi nhánh thành công.');
         redirect($this->redirectTarget());
     }
 
@@ -137,7 +137,7 @@ class BranchController
         $managerPhone = trim($_POST['manager_phone'] ?? '');
 
         if ($id <= 0 || $systemId <= 0 || $districtId <= 0 || $name === '' || $address === '') {
-            Session::flash('error', 'Thong tin cap nhat chi nhanh khong hop le.');
+            Session::flash('error', 'Thông tin cập nhật chi nhánh không hợp lệ.');
             redirect($this->redirectTarget());
         }
 
@@ -155,13 +155,13 @@ class BranchController
                 'manager_phone' => $managerPhone !== '' ? $managerPhone : null,
             ]);
         } catch (\PDOException) {
-            Session::flash('error', 'Cap nhat chi nhanh that bai. Vui long kiem tra du lieu bi trung.');
+            Session::flash('error', 'Cập nhật chi nhánh thất bại. Vui lòng kiểm tra dữ liệu bị trùng.');
             redirect($this->redirectTarget());
         }
 
         $user = Auth::user();
-        activity_log((int) $user['id'], 'update', 'branches', 'Cap nhat chi nhanh #' . $id . ': ' . $name);
-        Session::flash('success', 'Da cap nhat chi nhanh thanh cong.');
+        activity_log((int) $user['id'], 'update', 'branches', 'Cập nhật chi nhánh #' . $id . ': ' . $name);
+        Session::flash('success', 'Đã cập nhật chi nhánh thành công.');
         redirect($this->redirectTarget());
     }
 
@@ -172,7 +172,7 @@ class BranchController
 
         $id = (int) ($_POST['id'] ?? 0);
         if ($id <= 0) {
-            Session::flash('error', 'Chi nhanh khong hop le.');
+            Session::flash('error', 'Chi nhánh không hợp lệ.');
             redirect($this->redirectTarget());
         }
 
@@ -182,22 +182,22 @@ class BranchController
         $branch = $statement->fetch();
 
         if (! $branch) {
-            Session::flash('error', 'Chi nhanh khong ton tai.');
+            Session::flash('error', 'Chi nhánh không tồn tại.');
             redirect($this->redirectTarget());
         }
 
         $roomCountStatement = $connection->prepare('SELECT COUNT(*) FROM rooms WHERE branch_id = :id');
         $roomCountStatement->execute(['id' => $id]);
         if ((int) $roomCountStatement->fetchColumn() > 0) {
-            Session::flash('error', 'Khong the xoa chi nhanh khi van con phong ben trong.');
+            Session::flash('error', 'Không thể xóa chi nhánh khi vẫn còn phòng bên trong.');
             redirect($this->redirectTarget());
         }
 
         $connection->prepare('DELETE FROM branches WHERE id = :id')->execute(['id' => $id]);
 
         $user = Auth::user();
-        activity_log((int) $user['id'], 'delete', 'branches', 'Xoa chi nhanh #' . $id . ': ' . $branch['name']);
-        Session::flash('success', 'Da xoa chi nhanh thanh cong.');
+        activity_log((int) $user['id'], 'delete', 'branches', 'Xóa chi nhánh #' . $id . ': ' . $branch['name']);
+        Session::flash('success', 'Đã xóa chi nhánh thành công.');
         redirect($this->redirectTarget());
     }
 

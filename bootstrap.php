@@ -28,7 +28,17 @@ function app_config(): array
     static $config;
 
     if ($config === null) {
-        $config = require __DIR__ . '/config/app.php';
+        $config = [];
+
+        foreach (glob(__DIR__ . '/config/*.php') ?: [] as $file) {
+            $key = pathinfo($file, PATHINFO_FILENAME);
+            $loaded = require $file;
+            $config[$key] = $loaded;
+
+            if ($key === 'app' && is_array($loaded)) {
+                $config = array_merge($loaded, $config);
+            }
+        }
     }
 
     return $config;
