@@ -5,19 +5,52 @@ $statusLabels = [
     'da_lock' => 'Đã lock',
 ];
 $typeLabels = [
-    'co_gac' => 'Có gác',
-    'khong_gac' => 'Không gác',
+    'duplet' => 'Duplet',
+    'studio' => 'Studio',
+    'one_bedroom' => '1 phòng ngủ',
+    'two_bedroom' => '2 phòng ngủ',
+    'kiot' => 'Kiot',
 ];
 $furnitureLabels = [
     'co_noi_that' => 'Có nội thất',
     'khong_noi_that' => 'Không nội thất',
 ];
+$pagination = $pagination ?? [
+    'current_page' => 1,
+    'per_page' => 30,
+    'total_items' => count($rooms),
+    'total_pages' => 1,
+];
+$currentPage = (int) $pagination['current_page'];
+$totalPages = (int) $pagination['total_pages'];
+$totalItems = (int) $pagination['total_items'];
+$perPage = (int) $pagination['per_page'];
+$fromItem = $totalItems > 0 ? (($currentPage - 1) * $perPage) + 1 : 0;
+$toItem = $totalItems > 0 ? min($totalItems, $currentPage * $perPage) : 0;
+$pageUrl = static function (int $page): string {
+    $params = $_GET;
+    $params['page'] = $page;
+
+    return url('/app') . '?' . http_build_query($params);
+};
+$visiblePages = array_unique(array_filter([
+    1,
+    2,
+    $currentPage - 2,
+    $currentPage - 1,
+    $currentPage,
+    $currentPage + 1,
+    $currentPage + 2,
+    $totalPages - 1,
+    $totalPages,
+], static fn (int $page): bool => $page >= 1 && $page <= $totalPages));
+sort($visiblePages);
 ?>
 
 <section class="listing-hero">
     <div>
         <div class="eyebrow">Lựa chọn chỗ ở nổi bật</div>
-        <h2 class="listing-title">Kho phòng nội bộ giúp đội ngũ tư vấn chốt khách nhanh, rõ thông tin và đúng nhu cầu.</h2>
+        <h2 class="listing-title">Eco-Q</h2>
         <p class="listing-subtitle">
             Lọc theo quận, mức giá, trạng thái, nội thất, hệ thống và chi nhánh. Bấm vào từng phòng để xem
             chi tiết hình ảnh, video, thông số phòng và thao tác lock ngay trên hệ thống.
@@ -40,7 +73,7 @@ $furnitureLabels = [
         </div>
     </div>
 
-    <form method="GET" action="<?= e(url('/')) ?>" class="listing-filters">
+    <form method="GET" action="<?= e(url('/app')) ?>" class="listing-filters">
         <select name="district_id" class="form-select">
             <option value="0">Chọn quận</option>
             <?php foreach ($districts as $district): ?>
@@ -58,6 +91,13 @@ $furnitureLabels = [
             <?php endforeach; ?>
         </select>
 
+        <select name="room_type" class="form-select">
+            <option value="">Loại phòng</option>
+            <?php foreach ($typeLabels as $value => $label): ?>
+                <option value="<?= e($value) ?>" <?= $filters['room_type'] === $value ? 'selected' : '' ?>><?= e($label) ?></option>
+            <?php endforeach; ?>
+        </select>
+
         <select name="furniture_status" class="form-select">
             <option value="">Nội thất</option>
             <?php foreach ($furnitureLabels as $value => $label): ?>
@@ -72,6 +112,13 @@ $furnitureLabels = [
             <?php endforeach; ?>
         </select>
 
+        <select name="ward_id" class="form-select">
+            <option value="0">Phường</option>
+            <?php foreach ($wards as $ward): ?>
+                <option value="<?= e((string) $ward['id']) ?>" <?= (int) $filters['ward_id'] === (int) $ward['id'] ? 'selected' : '' ?>><?= e($ward['name']) ?></option>
+            <?php endforeach; ?>
+        </select>
+
         <select name="branch_id" class="form-select">
             <option value="0">Chi nhánh</option>
             <?php foreach ($branches as $branch): ?>
@@ -82,7 +129,7 @@ $furnitureLabels = [
         <input type="text" name="keyword" class="form-control listing-search" placeholder="Tìm theo số phòng, chi nhánh, địa chỉ..." value="<?= e($filters['keyword']) ?>">
 
         <button type="submit" class="btn btn-primary">Lọc phòng</button>
-        <a href="<?= e(url('/')) ?>" class="btn btn-outline-secondary">Xóa lọc</a>
+        <a href="<?= e(url('/app')) ?>" class="btn btn-outline-secondary">Xóa lọc</a>
     </form>
 </section>
 
@@ -99,9 +146,9 @@ $furnitureLabels = [
         <a href="<?= e(url('/rooms/' . $room['id'])) ?>" class="listing-card">
             <div class="listing-card-media">
                 <?php if ($cover && $cover['media_type'] === 'image'): ?>
-                    <img src="<?= e(url('../' . $cover['file_path'])) ?>" alt="<?= e($room['room_number']) ?>">
+                    <img src="<?= e(media_url($cover['file_path'])) ?>" alt="<?= e($room['room_number']) ?>">
                 <?php elseif ($cover && $cover['media_type'] === 'video'): ?>
-                    <video src="<?= e(url('../' . $cover['file_path'])) ?>" muted preload="metadata"></video>
+                    <video src="<?= e(media_url($cover['file_path'])) ?>" muted preload="metadata"></video>
                 <?php else: ?>
                     <div class="listing-card-placeholder">Chưa có ảnh</div>
                 <?php endif; ?>
@@ -127,3 +174,44 @@ $furnitureLabels = [
         </a>
     <?php endforeach; ?>
 </section>
+
+<?php if ($totalPages > 1): ?>
+    <nav class="listing-pagination" aria-label="Phân trang danh sách phòng">
+        <div class="listing-pagination-summary">
+            Hiển thị <?= e((string) $fromItem) ?>-<?= e((string) $toItem) ?> trong <?= e((string) $totalItems) ?> phòng
+        </div>
+        <div class="listing-pagination-pages">
+            <a
+                class="pagination-button <?= $currentPage <= 1 ? 'is-disabled' : '' ?>"
+                href="<?= e($currentPage > 1 ? $pageUrl($currentPage - 1) : '#') ?>"
+                aria-disabled="<?= $currentPage <= 1 ? 'true' : 'false' ?>"
+            >
+                Trước
+            </a>
+
+            <?php $previousPage = 0; ?>
+            <?php foreach ($visiblePages as $page): ?>
+                <?php if ($previousPage > 0 && $page > $previousPage + 1): ?>
+                    <span class="pagination-ellipsis">...</span>
+                <?php endif; ?>
+
+                <a
+                    class="pagination-button <?= $page === $currentPage ? 'is-active' : '' ?>"
+                    href="<?= e($pageUrl($page)) ?>"
+                    aria-current="<?= $page === $currentPage ? 'page' : 'false' ?>"
+                >
+                    <?= e((string) $page) ?>
+                </a>
+                <?php $previousPage = $page; ?>
+            <?php endforeach; ?>
+
+            <a
+                class="pagination-button <?= $currentPage >= $totalPages ? 'is-disabled' : '' ?>"
+                href="<?= e($currentPage < $totalPages ? $pageUrl($currentPage + 1) : '#') ?>"
+                aria-disabled="<?= $currentPage >= $totalPages ? 'true' : 'false' ?>"
+            >
+                Sau
+            </a>
+        </div>
+    </nav>
+<?php endif; ?>

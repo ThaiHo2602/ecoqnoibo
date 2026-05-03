@@ -3,6 +3,7 @@ $statusLabels = [
     'pending' => 'Chờ duyệt',
     'approved' => 'Đã duyệt',
     'rejected' => 'Từ chối',
+    'undone' => 'Hoàn tác',
 ];
 $roomStatusLabels = [
     'chua_lock' => 'Chưa lock',
@@ -45,6 +46,17 @@ $roomStatusLabels = [
             </div>
 
             <div class="grid-2">
+                <div>
+                <label class="form-label">Phường</label>
+                    <select name="ward_id" class="form-select">
+                        <option value="0">Tất cả phường</option>
+                        <?php foreach ($wards as $ward): ?>
+                            <option value="<?= e((string) $ward['id']) ?>" <?= (int) $filters['ward_id'] === (int) $ward['id'] ? 'selected' : '' ?>>
+                                <?= e($ward['name']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
                 <div>
                     <label class="form-label">Chi nhánh</label>
                     <select name="branch_id" class="form-select">
@@ -110,7 +122,7 @@ $roomStatusLabels = [
             <thead>
                 <tr>
                     <th>Phòng</th>
-                    <th>Chi nhánh</th>
+                    <th>Địa chỉ phòng</th>
                     <th>Nhân viên</th>
                     <th>Trạng thái yêu cầu</th>
                     <th>Trạng thái phòng</th>
@@ -135,8 +147,8 @@ $roomStatusLabels = [
                             <div class="text-muted small"><?= e(number_format((float) $request['price'], 0, ',', '.')) ?> đ</div>
                         </td>
                         <td>
-                            <div><?= e($request['branch_name']) ?></div>
-                            <div class="text-muted small"><?= e($request['system_name'] . ' - ' . $request['district_name']) ?></div>
+                            <div><?= e($request['branch_address'] ?: '-') ?></div>
+                            <div class="text-muted small"><?= e($request['branch_name'] . ' - ' . $request['district_name']) ?></div>
                         </td>
                         <td>
                             <div><?= e($request['requester_name']) ?></div>
@@ -172,6 +184,11 @@ $roomStatusLabels = [
                                         <button type="submit" class="btn btn-sm btn-outline-danger">Từ chối</button>
                                     </form>
                                 </div>
+                            <?php elseif ($isManagerView && $request['request_status'] === 'approved'): ?>
+                                <form method="POST" action="<?= e(url('/lock-requests/undo')) ?>" onsubmit="return confirm('Bạn chắc chắn muốn hoàn tác lock này?');">
+                                    <input type="hidden" name="id" value="<?= e((string) $request['id']) ?>">
+                                    <button type="submit" class="btn btn-sm btn-outline-warning">Hoàn tác</button>
+                                </form>
                             <?php else: ?>
                                 <span class="text-muted small">Không có thao tác</span>
                             <?php endif; ?>

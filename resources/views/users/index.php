@@ -29,7 +29,7 @@
 
             <div>
                 <label class="form-label">Từ khóa</label>
-                <input type="text" name="keyword" class="form-control" value="<?= e($filters['keyword']) ?>" placeholder="Họ tên, username, sđt, email">
+                <input type="text" name="keyword" class="form-control" value="<?= e($filters['keyword']) ?>" placeholder="Họ tên, tài khoản, số điện thoại, email">
             </div>
 
             <div class="d-flex gap-2 flex-wrap">
@@ -43,7 +43,7 @@
         <div class="panel-header">
             <div>
                 <h3><?= $editUser ? 'Cập nhật người dùng' : 'Thêm người dùng mới' ?></h3>
-                <p class="panel-subtitle mb-0">Chỉ giám đốc mới có quyền quản lý nhân sự.</p>
+                <p class="panel-subtitle mb-0">Giám đốc quản lý tài khoản nội bộ theo vai trò, không cần nhập thêm chức vụ riêng.</p>
             </div>
         </div>
 
@@ -52,15 +52,9 @@
                 <input type="hidden" name="id" value="<?= e((string) $editUser['id']) ?>">
             <?php endif; ?>
 
-            <div class="grid-2">
-                <div>
-                    <label class="form-label">Họ tên</label>
-                    <input type="text" name="full_name" class="form-control" value="<?= e($editUser['full_name'] ?? '') ?>" required>
-                </div>
-                <div>
-                    <label class="form-label">Chức vụ</label>
-                    <input type="text" name="job_title" class="form-control" value="<?= e($editUser['job_title'] ?? '') ?>" required>
-                </div>
+            <div>
+                <label class="form-label">Họ tên</label>
+                <input type="text" name="full_name" class="form-control" value="<?= e($editUser['full_name'] ?? '') ?>" required>
             </div>
 
             <div class="grid-2">
@@ -145,10 +139,7 @@
 
                 <?php foreach ($users as $user): ?>
                     <tr>
-                        <td>
-                            <div class="fw-semibold"><?= e($user['full_name']) ?></div>
-                            <div class="text-muted small"><?= e($user['job_title']) ?></div>
-                        </td>
+                        <td><div class="fw-semibold"><?= e($user['full_name']) ?></div></td>
                         <td><?= e($user['role_display_name']) ?></td>
                         <td><?= e($user['username']) ?></td>
                         <td>
@@ -160,6 +151,12 @@
                         <td class="text-end">
                             <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
                                 <a href="<?= e(url('/users?edit=' . $user['id'])) ?>" class="btn btn-sm btn-outline-primary">Sửa</a>
+                                <?php if ($user['account_status'] === 'locked'): ?>
+                                    <form method="POST" action="<?= e(url('/users/unlock')) ?>">
+                                        <input type="hidden" name="id" value="<?= e((string) $user['id']) ?>">
+                                        <button type="submit" class="btn btn-sm btn-outline-success">Mở khóa</button>
+                                    </form>
+                                <?php endif; ?>
                                 <form method="POST" action="<?= e(url('/users/delete')) ?>" onsubmit="return confirm('Bạn chắc chắn muốn xóa người dùng này?');">
                                     <input type="hidden" name="id" value="<?= e((string) $user['id']) ?>">
                                     <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>

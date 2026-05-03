@@ -2,7 +2,7 @@
 
 return [
     'name' => 'EcoQ Noi Bo',
-    'base_url' => 'http://localhost/EcoQnoibo/public',
+    'base_url' => 'https://wmsiuh.online',
     'timezone' => 'Asia/Ho_Chi_Minh',
     'db' => [
         'host' => '127.0.0.1',
@@ -14,5 +14,6 @@ return [
     ],
     'security' => [
         'inactive_lock_days' => 7,
+        'remember_days' => 30,
     ],
 ];

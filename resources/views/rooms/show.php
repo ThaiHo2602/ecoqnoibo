@@ -5,8 +5,11 @@ $statusLabels = [
     'da_lock' => 'Đã lock',
 ];
 $typeLabels = [
-    'co_gac' => 'Có gác',
-    'khong_gac' => 'Không gác',
+    'duplet' => 'Duplet',
+    'studio' => 'Studio',
+    'one_bedroom' => '1 phòng ngủ',
+    'two_bedroom' => '2 phòng ngủ',
+    'kiot' => 'Kiot',
 ];
 $furnitureLabels = [
     'co_noi_that' => 'Có nội thất',
@@ -22,11 +25,15 @@ $lockLabels = [
     'approved' => 'Đã duyệt',
     'rejected' => 'Từ chối',
 ];
+$imageMedia = array_values(array_filter(
+    $media,
+    static fn (array $item): bool => ($item['media_type'] ?? '') === 'image'
+));
 ?>
 
 <section class="room-detail-page">
     <div class="breadcrumb-line">
-        <a href="<?= e(url('/')) ?>">Trang chủ</a>
+        <a href="<?= e(url('/app')) ?>">Trang chủ</a>
         <span>/</span>
         <span><?= e('Phòng ' . $room['room_number']) ?></span>
     </div>
@@ -38,16 +45,17 @@ $lockLabels = [
                 <div class="room-gallery-shell" data-room-gallery data-current-index="0">
                     <div class="room-hero-media">
                         <div class="room-hero-stage" data-room-gallery-stage>
-                            <?php if ($hero['media_type'] === 'image'): ?>
+                            <?php if (($hero['media_type'] ?? '') === 'image'): ?>
                                 <img
-                                    src="<?= e(url('../' . $hero['file_path'])) ?>"
-                                    alt="<?= e($room['room_number']) ?>"
+                                    src="<?= e(media_url($hero['file_path'])) ?>"
+                                    alt="<?= e($hero['file_name'] ?: ('Phòng ' . $room['room_number'])) ?>"
                                     data-room-gallery-display
                                     data-media-type="image"
+                                    class="room-lightbox-trigger"
                                 >
                             <?php else: ?>
                                 <video
-                                    src="<?= e(url('../' . $hero['file_path'])) ?>"
+                                    src="<?= e(media_url($hero['file_path'])) ?>"
                                     controls
                                     preload="metadata"
                                     data-room-gallery-display
@@ -64,20 +72,26 @@ $lockLabels = [
 
                     <div class="room-gallery-grid">
                         <?php foreach ($media as $index => $item): ?>
+                            <?php
+                            $sourceUrl = media_url($item['file_path']);
+                            $fallbackName = 'phong-' . $room['room_number'] . '-' . str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT);
+                            $downloadName = trim((string) ($item['file_name'] ?? '')) !== '' ? (string) $item['file_name'] : $fallbackName;
+                            ?>
                             <button
                                 type="button"
                                 class="room-gallery-thumb <?= $index === 0 ? 'is-active' : '' ?>"
                                 data-gallery-thumb
                                 data-index="<?= e((string) $index) ?>"
                                 data-media-type="<?= e($item['media_type']) ?>"
-                                data-src="<?= e(url('../' . $item['file_path'])) ?>"
+                                data-src="<?= e($sourceUrl) ?>"
                                 data-alt="<?= e($item['file_name'] ?: ('Phòng ' . $room['room_number'])) ?>"
+                                data-download-name="<?= e($downloadName) ?>"
                                 aria-label="<?= e('Chuyển tới media ' . ($index + 1)) ?>"
                             >
-                                <?php if ($item['media_type'] === 'image'): ?>
-                                    <img src="<?= e(url('../' . $item['file_path'])) ?>" alt="<?= e($item['file_name']) ?>">
+                                <?php if (($item['media_type'] ?? '') === 'image'): ?>
+                                    <img src="<?= e($sourceUrl) ?>" alt="<?= e($item['file_name']) ?>">
                                 <?php else: ?>
-                                    <video src="<?= e(url('../' . $item['file_path'])) ?>" muted preload="metadata"></video>
+                                    <video src="<?= e($sourceUrl) ?>" muted preload="metadata"></video>
                                     <span class="room-gallery-video-badge">Video</span>
                                 <?php endif; ?>
                             </button>
@@ -102,6 +116,12 @@ $lockLabels = [
             </div>
 
             <div class="room-cta-stack">
+                <?php if ($imageMedia): ?>
+                    <button type="button" class="btn btn-outline-primary btn-lg" data-download-all-room-images>
+                        Tải toàn bộ ảnh phòng
+                    </button>
+                <?php endif; ?>
+
                 <?php if ($canRequestLock && $room['status'] === 'chua_lock'): ?>
                     <form method="POST" action="<?= e(url('/lock-requests/store')) ?>" class="d-grid gap-3">
                         <input type="hidden" name="room_id" value="<?= e((string) $room['id']) ?>">
@@ -229,10 +249,10 @@ $lockLabels = [
                 <?php $cover = $relatedMediaMap[$relatedRoom['id']][0] ?? null; ?>
                 <a href="<?= e(url('/rooms/' . $relatedRoom['id'])) ?>" class="listing-card compact-card">
                     <div class="listing-card-media">
-                        <?php if ($cover && $cover['media_type'] === 'image'): ?>
-                            <img src="<?= e(url('../' . $cover['file_path'])) ?>" alt="<?= e($relatedRoom['room_number']) ?>">
-                        <?php elseif ($cover && $cover['media_type'] === 'video'): ?>
-                            <video src="<?= e(url('../' . $cover['file_path'])) ?>" muted preload="metadata"></video>
+                        <?php if ($cover && ($cover['media_type'] ?? '') === 'image'): ?>
+                            <img src="<?= e(media_url($cover['file_path'])) ?>" alt="<?= e($relatedRoom['room_number']) ?>">
+                        <?php elseif ($cover && ($cover['media_type'] ?? '') === 'video'): ?>
+                            <video src="<?= e(media_url($cover['file_path'])) ?>" muted preload="metadata"></video>
                         <?php else: ?>
                             <div class="listing-card-placeholder">Chưa có ảnh</div>
                         <?php endif; ?>
@@ -249,17 +269,65 @@ $lockLabels = [
 </section>
 
 <?php if ($media): ?>
+    <div class="media-lightbox" data-media-lightbox hidden>
+        <button type="button" class="media-lightbox-close" data-lightbox-close aria-label="Đóng">×</button>
+        <button type="button" class="media-lightbox-nav prev" data-lightbox-prev aria-label="Ảnh trước">‹</button>
+        <div class="media-lightbox-dialog">
+            <a href="#" class="media-lightbox-download-icon" data-lightbox-download download aria-label="Tải ảnh hiện tại" title="Tải ảnh hiện tại">
+                <span aria-hidden="true">⭳</span>
+            </a>
+            <img src="" alt="" class="media-lightbox-image" data-lightbox-image>
+        </div>
+        <button type="button" class="media-lightbox-nav next" data-lightbox-next aria-label="Ảnh tiếp theo">›</button>
+    </div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        (function () {
             const gallery = document.querySelector('[data-room-gallery]');
-            if (!gallery) {
+            if (!gallery || gallery.dataset.initialized === '1') {
                 return;
             }
+
+            gallery.dataset.initialized = '1';
 
             const stage = gallery.querySelector('[data-room-gallery-stage]');
             const thumbs = Array.from(gallery.querySelectorAll('[data-gallery-thumb]'));
             const prevButton = gallery.querySelector('[data-gallery-prev]');
             const nextButton = gallery.querySelector('[data-gallery-next]');
+            const downloadAllButton = document.querySelector('[data-download-all-room-images]');
+            const lightbox = document.querySelector('[data-media-lightbox]');
+            const lightboxImage = lightbox ? lightbox.querySelector('[data-lightbox-image]') : null;
+            const lightboxDownload = lightbox ? lightbox.querySelector('[data-lightbox-download]') : null;
+            const lightboxClose = lightbox ? lightbox.querySelector('[data-lightbox-close]') : null;
+            const lightboxPrev = lightbox ? lightbox.querySelector('[data-lightbox-prev]') : null;
+            const lightboxNext = lightbox ? lightbox.querySelector('[data-lightbox-next]') : null;
+            const imageThumbs = thumbs.filter((thumb) => (thumb.dataset.mediaType || 'image') === 'image');
+            let activeLightboxIndex = 0;
+
+            const wait = (duration) => new Promise((resolve) => window.setTimeout(resolve, duration));
+
+            const triggerDownload = async (url, filename) => {
+                const response = await fetch(url, {
+                    credentials: 'same-origin',
+                });
+
+                if (!response.ok) {
+                    throw new Error('download_failed');
+                }
+
+                const blob = await response.blob();
+                const objectUrl = window.URL.createObjectURL(blob);
+                const anchor = document.createElement('a');
+                anchor.href = objectUrl;
+                anchor.download = filename || 'room-image';
+                document.body.appendChild(anchor);
+                anchor.click();
+                anchor.remove();
+
+                window.setTimeout(function () {
+                    window.URL.revokeObjectURL(objectUrl);
+                }, 1000);
+            };
 
             const renderMedia = (index) => {
                 const item = thumbs[index];
@@ -287,6 +355,7 @@ $lockLabels = [
                     image.alt = alt;
                     image.setAttribute('data-room-gallery-display', '');
                     image.setAttribute('data-media-type', 'image');
+                    image.classList.add('room-lightbox-trigger');
                     stage.appendChild(image);
                 }
 
@@ -294,6 +363,52 @@ $lockLabels = [
                 thumbs.forEach((thumb, thumbIndex) => {
                     thumb.classList.toggle('is-active', thumbIndex === index);
                 });
+            };
+
+            const syncLightbox = (imageIndex) => {
+                if (!lightbox || !lightboxImage || imageThumbs.length === 0) {
+                    return;
+                }
+
+                const safeIndex = imageIndex < 0
+                    ? imageThumbs.length - 1
+                    : imageIndex >= imageThumbs.length
+                        ? 0
+                        : imageIndex;
+
+                activeLightboxIndex = safeIndex;
+                const thumb = imageThumbs[safeIndex];
+                const src = thumb.dataset.src || '';
+                const alt = thumb.dataset.alt || '';
+                const downloadName = thumb.dataset.downloadName || alt || 'room-image';
+
+                lightboxImage.src = src;
+                lightboxImage.alt = alt;
+
+                if (lightboxDownload) {
+                    lightboxDownload.href = src;
+                    lightboxDownload.setAttribute('download', downloadName);
+                    lightboxDownload.dataset.filename = downloadName;
+                }
+            };
+
+            const openLightbox = (imageIndex) => {
+                if (!lightbox || imageThumbs.length === 0) {
+                    return;
+                }
+
+                syncLightbox(imageIndex);
+                lightbox.hidden = false;
+                document.body.classList.add('lightbox-open');
+            };
+
+            const closeLightboxModal = () => {
+                if (!lightbox) {
+                    return;
+                }
+
+                lightbox.hidden = true;
+                document.body.classList.remove('lightbox-open');
             };
 
             thumbs.forEach((thumb, index) => {
@@ -317,6 +432,106 @@ $lockLabels = [
                     renderMedia(nextIndex);
                 });
             }
-        });
+
+            if (stage) {
+                stage.addEventListener('click', function (event) {
+                    const target = event.target;
+                    if (!(target instanceof HTMLImageElement)) {
+                        return;
+                    }
+
+                    const currentSrc = target.getAttribute('src') || '';
+                    const imageIndex = imageThumbs.findIndex((thumb) => (thumb.dataset.src || '') === currentSrc);
+                    openLightbox(imageIndex >= 0 ? imageIndex : 0);
+                });
+            }
+
+            if (downloadAllButton) {
+                downloadAllButton.addEventListener('click', async function () {
+                    if (imageThumbs.length === 0) {
+                        return;
+                    }
+
+                    const originalLabel = downloadAllButton.textContent;
+                    downloadAllButton.disabled = true;
+                    downloadAllButton.textContent = 'Đang tải ảnh...';
+
+                    try {
+                        for (const thumb of imageThumbs) {
+                            await triggerDownload(
+                                thumb.dataset.src || '',
+                                thumb.dataset.downloadName || thumb.dataset.alt || 'room-image'
+                            );
+                            await wait(180);
+                        }
+                    } catch (error) {
+                        window.alert('Không thể tải toàn bộ ảnh. Vui lòng thử lại.');
+                    } finally {
+                        downloadAllButton.disabled = false;
+                        downloadAllButton.textContent = originalLabel;
+                    }
+                });
+            }
+
+            if (lightboxDownload) {
+                lightboxDownload.addEventListener('click', async function (event) {
+                    event.preventDefault();
+
+                    const src = lightboxDownload.getAttribute('href') || '';
+                    const filename = lightboxDownload.dataset.filename || 'room-image';
+                    if (src === '') {
+                        return;
+                    }
+
+                    try {
+                        await triggerDownload(src, filename);
+                    } catch (error) {
+                        window.alert('Không thể tải ảnh này. Vui lòng thử lại.');
+                    }
+                });
+            }
+
+            if (lightboxClose) {
+                lightboxClose.addEventListener('click', closeLightboxModal);
+            }
+
+            if (lightboxPrev) {
+                lightboxPrev.addEventListener('click', function () {
+                    syncLightbox(activeLightboxIndex - 1);
+                });
+            }
+
+            if (lightboxNext) {
+                lightboxNext.addEventListener('click', function () {
+                    syncLightbox(activeLightboxIndex + 1);
+                });
+            }
+
+            if (lightbox) {
+                lightbox.addEventListener('click', function (event) {
+                    if (event.target === lightbox) {
+                        closeLightboxModal();
+                    }
+                });
+            }
+
+            document.addEventListener('keydown', function (event) {
+                if (!lightbox || lightbox.hidden) {
+                    return;
+                }
+
+                if (event.key === 'Escape') {
+                    closeLightboxModal();
+                }
+
+                if (event.key === 'ArrowLeft') {
+                    syncLightbox(activeLightboxIndex - 1);
+                }
+
+                if (event.key === 'ArrowRight') {
+                    syncLightbox(activeLightboxIndex + 1);
+                }
+            });
+        })();
     </script>
 <?php endif; ?>

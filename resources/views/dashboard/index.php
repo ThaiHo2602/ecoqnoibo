@@ -4,10 +4,7 @@
     <div>
         <div class="eyebrow">Tổng quan nội bộ</div>
         <h2>Chào <?= e($user['full_name'] ?? '') ?>, đây là bảng điều khiển dành cho vận hành và quản trị toàn hệ thống.</h2>
-        <p class="mb-0 text-muted">
-            Trang chủ sau đăng nhập là màn hình tìm phòng. Khu vực này tập trung vào số liệu, trạng thái vận hành
-            và các dữ liệu cần theo dõi nhanh cho quản lý và giám đốc.
-        </p>
+       
     </div>
     <div class="hero-chip">
         <span class="d-block small text-uppercase text-muted">Vai trò hiện tại</span>

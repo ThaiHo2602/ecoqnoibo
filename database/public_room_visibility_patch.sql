@@ -1,0 +1,2 @@
+ALTER TABLE rooms
+  ADD COLUMN is_public_visible TINYINT(1) NOT NULL DEFAULT 0 AFTER status;

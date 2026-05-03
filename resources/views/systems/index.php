@@ -66,7 +66,7 @@
 
             <div>
                 <label class="form-label">Hệ thống</label>
-                <select name="system_id" class="form-select" required>
+                <select name="system_id" class="form-select">
                     <option value="">Chọn hệ thống</option>
                     <?php foreach ($systems as $system): ?>
                         <option value="<?= e((string) $system['id']) ?>" <?= (int) ($editBranch['system_id'] ?? 0) === (int) $system['id'] ? 'selected' : '' ?>>
@@ -77,8 +77,21 @@
             </div>
 
             <div>
+                <label class="form-label">Phường</label>
+                <select name="ward_id" class="form-select" required>
+                    <option value="">Chọn phường</option>
+                    <?php foreach ($wards as $ward): ?>
+                        <option value="<?= e((string) $ward['id']) ?>" <?= (int) ($editBranch['ward_id'] ?? 0) === (int) $ward['id'] ? 'selected' : '' ?>>
+                            <?= e($ward['name']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <div class="form-text">Chi nhánh có thể thuộc hệ thống và phường độc lập với nhau.</div>
+            </div>
+
+            <div>
                 <label class="form-label">Tên chi nhánh</label>
-                <input type="text" name="name" class="form-control" value="<?= e($editBranch['name'] ?? '') ?>" placeholder="Ví dụ: Long Thịnh 1" required>
+                <input type="text" name="name" class="form-control" value="<?= e($editBranch['name'] ?? '') ?>" placeholder="Ví dụ: Nguyễn Thị Thập" required>
             </div>
 
             <div>
@@ -117,18 +130,23 @@
     <div class="panel-header">
         <div>
             <h3>Danh sách hệ thống</h3>
-            <p class="panel-subtitle mb-0">Bấm vào từng hệ thống để xem các chi nhánh bên trong và thao tác nhanh.</p>
+            <p class="panel-subtitle mb-0">Chỉ hiện danh sách hệ thống ở trạng thái gọn. Bấm mũi tên để xổ chi nhánh bên trong khi cần xem.</p>
         </div>
         <span class="badge text-bg-light"><?= e((string) count($systems)) ?> hệ thống</span>
     </div>
 
+    <form id="systemsBulkDeleteForm" method="POST" action="<?= e(url('/systems/bulk-delete')) ?>" class="mb-3" onsubmit="return confirm('Bạn chắc chắn muốn xóa các hệ thống đã chọn?');">
+        <button type="submit" class="btn btn-outline-danger btn-sm">Xóa hệ thống đã chọn</button>
+    </form>
+
     <div class="accordion-stack">
         <?php foreach ($systems as $system): ?>
             <?php $systemBranches = $branchesBySystem[$system['id']] ?? []; ?>
-            <article class="accordion-item-custom">
-                <div class="accordion-summary">
+            <details class="accordion-item-custom" <?= $editBranch && (int) $editBranch['system_id'] === (int) $system['id'] ? 'open' : '' ?>>
+                <summary class="accordion-summary accordion-toggle">
                     <div>
                         <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <input class="form-check-input" type="checkbox" name="ids[]" value="<?= e((string) $system['id']) ?>" form="systemsBulkDeleteForm" onclick="event.stopPropagation();">
                             <h4 class="mb-0"><?= e($system['name']) ?></h4>
                             <span class="status-pill <?= (int) $system['is_active'] === 1 ? 'status-approved' : 'status-rejected' ?>">
                                 <?= (int) $system['is_active'] === 1 ? 'Đang hoạt động' : 'Tạm dừng' ?>
@@ -137,11 +155,14 @@
                         <p class="text-muted mb-0 mt-2"><?= e($system['description'] ?: 'Chưa có mô tả cho hệ thống này.') ?></p>
                     </div>
 
-                    <div class="accordion-meta">
-                        <div><strong><?= e((string) $system['branch_count']) ?></strong><span>Chi nhánh</span></div>
-                        <div><strong><?= e((string) $system['room_count']) ?></strong><span>Phòng</span></div>
+                    <div class="accordion-side">
+                        <div class="accordion-meta">
+                            <div><strong><?= e((string) $system['branch_count']) ?></strong><span>Chi nhánh</span></div>
+                            <div><strong><?= e((string) $system['room_count']) ?></strong><span>Phòng</span></div>
+                        </div>
+                        <span class="accordion-chevron" aria-hidden="true"></span>
                     </div>
-                </div>
+                </summary>
 
                 <div class="accordion-actions">
                     <a href="<?= e(url('/systems?edit_system=' . $system['id'])) ?>" class="btn btn-sm btn-outline-primary">Sửa hệ thống</a>
@@ -193,7 +214,7 @@
                         </div>
                     <?php endif; ?>
                 </div>
-            </article>
+            </details>
         <?php endforeach; ?>
     </div>
 </section>

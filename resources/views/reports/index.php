@@ -68,12 +68,8 @@ $chartBranchValues = array_map(static fn (array $item): int => (int) $item['appr
         <strong><?= e((string) $summary['totalApproved']) ?></strong>
     </article>
     <article class="stat-card">
-        <span class="stat-label">Nhân viên có dữ liệu</span>
-        <strong><?= e((string) count($topStaff)) ?></strong>
-    </article>
-    <article class="stat-card">
-        <span class="stat-label">Chi nhánh có dữ liệu</span>
-        <strong><?= e((string) count($topBranches)) ?></strong>
+        <span class="stat-label">Tổng hoàn tác lock</span>
+        <strong><?= e((string) $summary['totalUndone']) ?></strong>
     </article>
 </section>
 
@@ -119,7 +115,7 @@ $chartBranchValues = array_map(static fn (array $item): int => (int) $item['appr
     <div class="panel-card">
         <div class="panel-header">
             <div>
-                <h3><?= e($rankingModeLabel) ?> - Nhân viên lock trọ</h3>
+                <h3><?= e($rankingModeLabel) ?> - Nhân viên lock căn hộ dịch vụ</h3>
                 <p class="panel-subtitle mb-0">Hiển thị theo bộ lọc top <?= e((string) $topLimit) ?> mà bạn đã chọn.</p>
             </div>
         </div>
@@ -131,11 +127,12 @@ $chartBranchValues = array_map(static fn (array $item): int => (int) $item['appr
                         <th>Nhân viên</th>
                         <th>Tài khoản</th>
                         <th class="text-end">Số lock duyệt</th>
+                        <th class="text-end">Hoàn tác lock</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (! $topStaff): ?>
-                        <tr><td colspan="4"><div class="empty-state my-3">Chưa có dữ liệu nhân viên để thống kê.</div></td></tr>
+                        <tr><td colspan="5"><div class="empty-state my-3">Chưa có dữ liệu nhân viên để thống kê.</div></td></tr>
                     <?php endif; ?>
                     <?php foreach ($topStaff as $index => $item): ?>
                         <tr>
@@ -143,6 +140,7 @@ $chartBranchValues = array_map(static fn (array $item): int => (int) $item['appr
                             <td><?= e($item['full_name']) ?></td>
                             <td><?= e($item['username']) ?></td>
                             <td class="text-end fw-semibold"><?= e((string) $item['approved_count']) ?></td>
+                            <td class="text-end fw-semibold"><?= e((string) ($item['undone_count'] ?? 0)) ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -153,7 +151,7 @@ $chartBranchValues = array_map(static fn (array $item): int => (int) $item['appr
     <div class="panel-card">
         <div class="panel-header">
             <div>
-                <h3><?= e($rankingModeLabel) ?> - Hệ thống</h3>
+                <h3><?= e($rankingModeLabel) ?> - Hệ thống duy trì</h3>
                 <p class="panel-subtitle mb-0">Bảng xếp hạng hệ thống theo số yêu cầu lock đã duyệt.</p>
             </div>
         </div>
@@ -164,17 +162,19 @@ $chartBranchValues = array_map(static fn (array $item): int => (int) $item['appr
                         <th>#</th>
                         <th>Hệ thống</th>
                         <th class="text-end">Số lock duyệt</th>
+                        <th class="text-end">Hoàn tác lock</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (! $topSystems): ?>
-                        <tr><td colspan="3"><div class="empty-state my-3">Chưa có dữ liệu hệ thống.</div></td></tr>
+                        <tr><td colspan="4"><div class="empty-state my-3">Chưa có dữ liệu hệ thống.</div></td></tr>
                     <?php endif; ?>
                     <?php foreach ($topSystems as $index => $item): ?>
                         <tr>
                             <td><?= e((string) ($index + 1)) ?></td>
                             <td><?= e($item['name']) ?></td>
                             <td class="text-end fw-semibold"><?= e((string) $item['approved_count']) ?></td>
+                            <td class="text-end fw-semibold"><?= e((string) ($item['undone_count'] ?? 0)) ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -186,7 +186,7 @@ $chartBranchValues = array_map(static fn (array $item): int => (int) $item['appr
 <section class="panel-card mt-4">
     <div class="panel-header">
         <div>
-            <h3><?= e($rankingModeLabel) ?> - Chi nhánh</h3>
+            <h3><?= e($rankingModeLabel) ?> - Chi nhánh duy trì</h3>
             <p class="panel-subtitle mb-0">Danh sách chi nhánh theo bộ lọc top <?= e((string) $topLimit) ?>, có kèm hệ thống để đối chiếu nhanh.</p>
         </div>
     </div>
@@ -198,11 +198,12 @@ $chartBranchValues = array_map(static fn (array $item): int => (int) $item['appr
                     <th>Chi nhánh</th>
                     <th>Hệ thống</th>
                     <th class="text-end">Số lock duyệt</th>
+                    <th class="text-end">Hoàn tác lock</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (! $topBranches): ?>
-                    <tr><td colspan="4"><div class="empty-state my-3">Chưa có dữ liệu chi nhánh.</div></td></tr>
+                    <tr><td colspan="5"><div class="empty-state my-3">Chưa có dữ liệu chi nhánh.</div></td></tr>
                 <?php endif; ?>
                 <?php foreach ($topBranches as $index => $item): ?>
                     <tr>
@@ -210,6 +211,7 @@ $chartBranchValues = array_map(static fn (array $item): int => (int) $item['appr
                         <td><?= e($item['name']) ?></td>
                         <td><?= e($item['system_name']) ?></td>
                         <td class="text-end fw-semibold"><?= e((string) $item['approved_count']) ?></td>
+                        <td class="text-end fw-semibold"><?= e((string) ($item['undone_count'] ?? 0)) ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>

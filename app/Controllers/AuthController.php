@@ -11,7 +11,7 @@ class AuthController
     public function showLogin(): void
     {
         if (Auth::check()) {
-            redirect('/');
+            redirect('/app');
         }
 
         View::render('auth.login', [
@@ -37,13 +37,13 @@ class AuthController
         }
 
         Session::flash('success', 'Đăng nhập thành công.');
-        redirect('/');
+        redirect('/app');
     }
 
     public function logout(): void
     {
         Auth::logout();
         Session::destroy();
-        redirect('/login');
+        redirect('/');
     }
 }

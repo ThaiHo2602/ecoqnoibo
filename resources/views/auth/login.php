@@ -18,15 +18,9 @@ $logoUrl = asset('assets/images/logo.png');
                 >
                 <div>
                     <div class="eyebrow">Eco-Q House nội bộ</div>
-                    <h1>Hệ thống quản lý trọ dành cho đội ngũ môi giới chuyên nghiệp.</h1>
+                    <h2>Hệ thống quản lý căn hộ dịch vụ nội bộ của Eco-Q House.</h2>
                 </div>
             </div>
-
-            <p>
-                Theo dõi hệ thống, chi nhánh, phòng, duyệt lock, khách hàng và toàn bộ lịch trình làm việc
-                trên một giao diện hiện đại, rõ ràng và dễ thao tác.
-            </p>
-
             <div class="auth-points">
                 <div class="auth-point">
                     <strong>Phân quyền rõ ràng</strong>
@@ -36,10 +30,7 @@ $logoUrl = asset('assets/images/logo.png');
                     <strong>Tìm phòng thật nhanh</strong>
                     <span>Lọc mạnh theo quận, giá, nội thất, trạng thái và chi nhánh để tư vấn khách hiệu quả.</span>
                 </div>
-                <div class="auth-point">
-                    <strong>Quy trình lock minh bạch</strong>
-                    <span>Nhân viên gửi yêu cầu, quản lý duyệt nhanh, lịch sử thao tác được ghi nhận đầy đủ.</span>
-                </div>
+               
             </div>
         </div>
 

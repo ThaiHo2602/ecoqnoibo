@@ -76,14 +76,68 @@ function public_path(string $path = ''): string
     return base_path('public' . ($path ? DIRECTORY_SEPARATOR . ltrim($path, '\\/') : ''));
 }
 
+function app_base_url(): string
+{
+    $configuredBaseUrl = rtrim((string) config('base_url', ''), '/');
+
+    if (PHP_SAPI === 'cli') {
+        return $configuredBaseUrl;
+    }
+
+    $configuredHost = strtolower((string) (parse_url($configuredBaseUrl, PHP_URL_HOST) ?? ''));
+    $configuredPath = trim((string) (parse_url($configuredBaseUrl, PHP_URL_PATH) ?? ''), '/');
+
+    $forwardedHost = trim((string) ($_SERVER['HTTP_X_FORWARDED_HOST'] ?? ''));
+    $requestHost = $forwardedHost !== ''
+        ? trim(explode(',', $forwardedHost)[0])
+        : trim((string) ($_SERVER['HTTP_HOST'] ?? ''));
+    $requestHost = preg_replace('/:\d+$/', '', $requestHost ?? '') ?? '';
+
+    if ($requestHost === '') {
+        return $configuredBaseUrl;
+    }
+
+    $httpsIndicators = [
+        strtolower((string) ($_SERVER['HTTPS'] ?? '')),
+        strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')),
+        strtolower((string) ($_SERVER['REQUEST_SCHEME'] ?? '')),
+    ];
+
+    $scheme = in_array('https', $httpsIndicators, true) || in_array('on', $httpsIndicators, true)
+        ? 'https'
+        : 'http';
+
+    $configuredIsLocal = in_array($configuredHost, ['', 'localhost', '127.0.0.1'], true);
+    $requestMatchesConfigured = $configuredHost !== '' && strcasecmp($configuredHost, $requestHost) === 0;
+
+    if (! $configuredIsLocal && $requestMatchesConfigured) {
+        return $configuredBaseUrl;
+    }
+
+    $requestPath = trim((string) (parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? ''), '/');
+    $resolvedBasePath = '';
+
+    if ($configuredPath !== '' && ($requestPath === $configuredPath || str_starts_with($requestPath, $configuredPath . '/'))) {
+        $resolvedBasePath = $configuredPath;
+    }
+
+    return $scheme . '://' . $requestHost . ($resolvedBasePath !== '' ? '/' . $resolvedBasePath : '');
+}
+
 function asset(string $path): string
 {
-    return rtrim(config('base_url'), '/') . '/' . ltrim($path, '/');
+    return rtrim(app_base_url(), '/') . '/' . ltrim($path, '/');
 }
 
 function url(string $path = ''): string
 {
-    return rtrim(config('base_url'), '/') . '/' . ltrim($path, '/');
+    return rtrim(app_base_url(), '/') . '/' . ltrim($path, '/');
+}
+
+function media_url(string $path): string
+{
+    $normalizedPath = str_replace('\\', '/', ltrim($path, '\\/'));
+    return url($normalizedPath);
 }
 
 function redirect(string $path): never
@@ -110,7 +164,7 @@ function e(string|null $value): string
 function is_current_path(string $path): bool
 {
     $requestPath = trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/', '/');
-    $basePath = trim(parse_url(config('base_url'), PHP_URL_PATH) ?? '', '/');
+    $basePath = trim(parse_url(app_base_url(), PHP_URL_PATH) ?? '', '/');
 
     if ($basePath !== '' && str_starts_with($requestPath, $basePath)) {
         $requestPath = trim(substr($requestPath, strlen($basePath)), '/');
@@ -122,7 +176,7 @@ function is_current_path(string $path): bool
 function current_path(): string
 {
     $requestPath = trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/', '/');
-    $basePath = trim(parse_url(config('base_url'), PHP_URL_PATH) ?? '', '/');
+    $basePath = trim(parse_url(app_base_url(), PHP_URL_PATH) ?? '', '/');
 
     if ($basePath !== '' && str_starts_with($requestPath, $basePath)) {
         $requestPath = trim(substr($requestPath, strlen($basePath)), '/');

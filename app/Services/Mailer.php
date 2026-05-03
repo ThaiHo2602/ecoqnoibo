@@ -94,12 +94,60 @@ class Mailer
         ];
     }
 
+    public static function sendLandingContact(array $contact): array
+    {
+        $recipientEmail = trim((string) config('mail.contact_to_email', ''));
+        if ($recipientEmail === '') {
+            $recipientEmail = trim((string) config('mail.from_email', ''));
+        }
+
+        if ($recipientEmail === '' || ! filter_var($recipientEmail, FILTER_VALIDATE_EMAIL)) {
+            self::log('Bo qua gui lien he: email nhan lien he chua hop le.');
+
+            return [
+                'sent' => false,
+                'reason' => 'missing_contact_recipient',
+                'message' => 'Email nhận liên hệ chưa được cấu hình.',
+            ];
+        }
+
+        if (! self::isConfigured()) {
+            self::log('Bo qua gui lien he: cau hinh SMTP chua day du hoac chua bat.');
+
+            return [
+                'sent' => false,
+                'reason' => 'mail_not_configured',
+                'message' => 'SMTP chưa được cấu hình hoàn chỉnh nên chưa thể gửi email.',
+            ];
+        }
+
+        $replyToEmail = trim((string) ($contact['email'] ?? ''));
+
+        self::send([
+            'to_email' => $recipientEmail,
+            'to_name' => 'Eco-Q House',
+            'reply_to_email' => filter_var($replyToEmail, FILTER_VALIDATE_EMAIL) ? $replyToEmail : '',
+            'reply_to_name' => (string) ($contact['name'] ?? ''),
+            'subject' => 'Khách hàng gửi liên hệ từ landing page Eco-Q House',
+            'html' => self::buildLandingContactHtml($contact),
+            'text' => self::buildLandingContactText($contact),
+        ]);
+
+        self::log('Gui lien he landing thanh cong toi ' . $recipientEmail . ' - ' . ($contact['name'] ?? ''));
+
+        return [
+            'sent' => true,
+            'reason' => 'sent',
+            'message' => 'Đã gửi thông tin liên hệ.',
+        ];
+    }
+
     public static function send(array $payload): void
     {
         $host = (string) config('mail.host');
         $port = (int) config('mail.port');
         $username = (string) config('mail.username');
-        $password = (string) config('mail.password');
+        $password = preg_replace('/\s+/', '', (string) config('mail.password'));
         $fromEmail = (string) config('mail.from_email');
         $fromName = (string) config('mail.from_name', 'Eco-Q House');
         $encryption = strtolower((string) config('mail.encryption', 'tls'));
@@ -148,6 +196,8 @@ class Mailer
                 'from_name' => $fromName,
                 'to_email' => (string) $payload['to_email'],
                 'to_name' => (string) ($payload['to_name'] ?? ''),
+                'reply_to_email' => (string) ($payload['reply_to_email'] ?? ''),
+                'reply_to_name' => (string) ($payload['reply_to_name'] ?? ''),
                 'subject' => (string) $payload['subject'],
                 'html' => (string) ($payload['html'] ?? ''),
                 'text' => (string) ($payload['text'] ?? ''),
@@ -172,6 +222,10 @@ class Mailer
             'Subject: ' . self::encodeHeader($payload['subject']),
             'Content-Type: multipart/alternative; boundary="' . $boundary . '"',
         ];
+
+        if (! empty($payload['reply_to_email']) && filter_var($payload['reply_to_email'], FILTER_VALIDATE_EMAIL)) {
+            $headers[] = 'Reply-To: ' . self::formatAddress($payload['reply_to_email'], (string) ($payload['reply_to_name'] ?? ''));
+        }
 
         $textBody = quoted_printable_encode(str_replace("\n", "\r\n", $payload['text']));
         $htmlBody = quoted_printable_encode(str_replace("\n", "\r\n", $payload['html']));
@@ -286,6 +340,62 @@ HTML;
             'Ghi chu: ' . ($note !== '' ? $note : 'Khong co ghi chu them.'),
             '',
             'Xem chi tiet tai: ' . url('/customers'),
+        ]);
+    }
+
+    private static function buildLandingContactHtml(array $contact): string
+    {
+        $name = htmlspecialchars((string) ($contact['name'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $phone = htmlspecialchars((string) ($contact['phone'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $email = htmlspecialchars((string) ($contact['email'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $topic = htmlspecialchars((string) ($contact['topic'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $message = nl2br(htmlspecialchars((string) ($contact['message'] ?? ''), ENT_QUOTES, 'UTF-8'));
+        $ipAddress = htmlspecialchars((string) ($contact['ip_address'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $submittedAt = htmlspecialchars((string) ($contact['submitted_at'] ?? ''), ENT_QUOTES, 'UTF-8');
+
+        return <<<HTML
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Liên hệ mới từ Eco-Q House</title>
+</head>
+<body style="margin:0;padding:24px;background:#f5f8ff;font-family:Arial,sans-serif;color:#14284a;">
+    <div style="max-width:640px;margin:0 auto;background:#ffffff;border-radius:20px;padding:32px;border:1px solid #e7eefc;">
+        <div style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#b8861f;margin-bottom:12px;">Eco-Q House</div>
+        <h1 style="margin:0 0 16px;font-size:26px;line-height:1.3;color:#102b5a;">Khách hàng vừa gửi thông tin liên hệ</h1>
+        <div style="background:#f7faff;border:1px solid #e3ebfb;border-radius:16px;padding:18px 20px;margin-bottom:20px;">
+            <p style="margin:0 0 10px;"><strong>Họ tên:</strong> {$name}</p>
+            <p style="margin:0 0 10px;"><strong>Số điện thoại:</strong> {$phone}</p>
+            <p style="margin:0 0 10px;"><strong>Email:</strong> {$email}</p>
+            <p style="margin:0 0 10px;"><strong>Nhu cầu:</strong> {$topic}</p>
+            <p style="margin:0 0 10px;"><strong>Thời gian gửi:</strong> {$submittedAt}</p>
+            <p style="margin:0;"><strong>IP:</strong> {$ipAddress}</p>
+        </div>
+        <div style="line-height:1.7;">
+            <strong>Nội dung:</strong><br>
+            {$message}
+        </div>
+    </div>
+</body>
+</html>
+HTML;
+    }
+
+    private static function buildLandingContactText(array $contact): string
+    {
+        return implode("\n", [
+            'Khach hang vua gui thong tin lien he tu landing page Eco-Q House.',
+            '',
+            'Ho ten: ' . ($contact['name'] ?? ''),
+            'So dien thoai: ' . ($contact['phone'] ?? ''),
+            'Email: ' . ($contact['email'] ?? ''),
+            'Nhu cau: ' . ($contact['topic'] ?? ''),
+            'Thoi gian gui: ' . ($contact['submitted_at'] ?? ''),
+            'IP: ' . ($contact['ip_address'] ?? ''),
+            '',
+            'Noi dung:',
+            (string) ($contact['message'] ?? ''),
         ]);
     }
 

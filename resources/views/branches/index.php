@@ -21,6 +21,18 @@
             </div>
 
             <div>
+                <label class="form-label">Phường</label>
+                <select name="ward_id" class="form-select">
+                    <option value="0">Tất cả phường</option>
+                    <?php foreach ($wards as $ward): ?>
+                        <option value="<?= e((string) $ward['id']) ?>" <?= (int) $filters['ward_id'] === (int) $ward['id'] ? 'selected' : '' ?>>
+                            <?= e($ward['name']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div>
                 <label class="form-label">Quận</label>
                 <select name="district_id" class="form-select">
                     <option value="0">Tất cả quận</option>
@@ -60,7 +72,7 @@
 
             <div>
                 <label class="form-label">Hệ thống</label>
-                <select name="system_id" class="form-select" required>
+                <select name="system_id" class="form-select">
                     <option value="">Chọn hệ thống</option>
                     <?php foreach ($systems as $system): ?>
                         <option value="<?= e((string) $system['id']) ?>" <?= (int) ($editBranch['system_id'] ?? $filters['system_id']) === (int) $system['id'] ? 'selected' : '' ?>>
@@ -68,6 +80,19 @@
                         </option>
                     <?php endforeach; ?>
                 </select>
+            </div>
+
+            <div>
+                <label class="form-label">Phường</label>
+                <select name="ward_id" class="form-select" required>
+                    <option value="">Chọn phường</option>
+                    <?php foreach ($wards as $ward): ?>
+                        <option value="<?= e((string) $ward['id']) ?>" <?= (int) ($editBranch['ward_id'] ?? $filters['ward_id']) === (int) $ward['id'] ? 'selected' : '' ?>>
+                            <?= e($ward['name']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <div class="form-text">Chi nhánh có thể thuộc hệ thống và phường độc lập với nhau.</div>
             </div>
 
             <div>
@@ -117,11 +142,17 @@
     </div>
 
     <div class="table-responsive">
+        <form id="branchesBulkDeleteForm" method="POST" action="<?= e(url('/branches/bulk-delete')) ?>" class="mb-3" onsubmit="return confirm('Bạn chắc chắn muốn xóa các chi nhánh đã chọn?');">
+            <input type="hidden" name="redirect_to" value="/branches">
+            <button type="submit" class="btn btn-outline-danger btn-sm">Xóa chi nhánh đã chọn</button>
+        </form>
         <table class="table align-middle mb-0">
             <thead>
                 <tr>
+                    <th></th>
                     <th>Chi nhánh</th>
                     <th>Hệ thống</th>
+                    <th>Phường</th>
                     <th>Quận</th>
                     <th>Địa chỉ</th>
                     <th>SDT quản lý</th>
@@ -132,7 +163,7 @@
             <tbody>
                 <?php if (! $branches): ?>
                     <tr>
-                        <td colspan="7">
+                        <td colspan="9">
                             <div class="empty-state my-3">Chưa có chi nhánh nào phù hợp với bộ lọc hiện tại.</div>
                         </td>
                     </tr>
@@ -140,8 +171,10 @@
 
                 <?php foreach ($branches as $branch): ?>
                     <tr>
+                        <td><input class="form-check-input" type="checkbox" name="ids[]" value="<?= e((string) $branch['id']) ?>" form="branchesBulkDeleteForm"></td>
                         <td><?= e($branch['name']) ?></td>
                         <td><?= e($branch['system_name']) ?></td>
+                        <td><?= e($branch['ward_name'] ?: '-') ?></td>
                         <td><?= e($branch['district_name']) ?></td>
                         <td><?= e($branch['address']) ?></td>
                         <td><?= e($branch['manager_phone'] ?: '-') ?></td>

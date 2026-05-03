@@ -33,10 +33,12 @@ class UserController
             $sql .= ' AND roles.name = :role';
             $params['role'] = $filters['role'];
         }
+
         if ($filters['status'] !== '') {
             $sql .= ' AND users.account_status = :status';
             $params['status'] = $filters['status'];
         }
+
         if ($filters['keyword'] !== '') {
             $sql .= ' AND (users.full_name LIKE :keyword OR users.username LIKE :keyword OR users.phone LIKE :keyword OR users.email LIKE :keyword)';
             $params['keyword'] = '%' . $filters['keyword'] . '%';
@@ -86,7 +88,7 @@ class UserController
                  VALUES (:role_id, :full_name, :job_title, :phone, :email, :username, :password, :account_status, NULL)'
             )->execute($payload);
         } catch (\PDOException) {
-            Session::flash('error', 'Tạo người dùng thất bại. Username có thể đã tồn tại.');
+            Session::flash('error', 'Tạo người dùng thất bại. Tài khoản có thể đã tồn tại.');
             redirect('/users');
         }
 
@@ -104,6 +106,14 @@ class UserController
         $userId = (int) ($_POST['id'] ?? 0);
         if ($userId <= 0) {
             Session::flash('error', 'Người dùng không hợp lệ.');
+            redirect('/users');
+        }
+
+        $existingStatement = Database::connection()->prepare('SELECT account_status FROM users WHERE id = :id LIMIT 1');
+        $existingStatement->execute(['id' => $userId]);
+        $existingUser = $existingStatement->fetch();
+        if (! $existingUser) {
+            Session::flash('error', 'Người dùng không tồn tại.');
             redirect('/users');
         }
 
@@ -128,18 +138,56 @@ class UserController
             unset($payload['password']);
         }
 
+        if ($existingUser['account_status'] === 'locked' && $payload['account_status'] === 'active') {
+            $fields[] = 'last_login_at = NOW()';
+        }
+
         try {
             Database::connection()->prepare(
                 'UPDATE users SET ' . implode(', ', $fields) . ' WHERE id = :id'
             )->execute($payload + ['id' => $userId]);
         } catch (\PDOException) {
-            Session::flash('error', 'Cập nhật người dùng thất bại. Username có thể đã tồn tại.');
+            Session::flash('error', 'Cập nhật người dùng thất bại. Tài khoản có thể đã tồn tại.');
             redirect('/users?edit=' . $userId);
         }
 
         $currentUser = Auth::user();
         activity_log((int) $currentUser['id'], 'update', 'users', 'Cập nhật người dùng #' . $userId);
         Session::flash('success', 'Đã cập nhật người dùng thành công.');
+        redirect('/users');
+    }
+
+    public function unlock(): void
+    {
+        Auth::requireLogin();
+        Auth::authorize(['director']);
+
+        $userId = (int) ($_POST['id'] ?? 0);
+        $currentUser = Auth::user();
+
+        if ($userId <= 0) {
+            Session::flash('error', 'Người dùng không hợp lệ.');
+            redirect('/users');
+        }
+
+        $statement = Database::connection()->prepare('SELECT username FROM users WHERE id = :id LIMIT 1');
+        $statement->execute(['id' => $userId]);
+        $user = $statement->fetch();
+
+        if (! $user) {
+            Session::flash('error', 'Người dùng không tồn tại.');
+            redirect('/users');
+        }
+
+        Database::connection()->prepare(
+            "UPDATE users
+             SET account_status = 'active',
+                 last_login_at = NOW()
+             WHERE id = :id"
+        )->execute(['id' => $userId]);
+
+        activity_log((int) $currentUser['id'], 'unlock', 'users', 'Mở khóa người dùng #' . $userId . ' - ' . $user['username']);
+        Session::flash('success', 'Đã mở khóa tài khoản. Người dùng có thể đăng nhập lại.');
         redirect('/users');
     }
 
@@ -179,16 +227,16 @@ class UserController
 
     private function validatedPayload(bool $requirePassword): ?array
     {
+        $connection = Database::connection();
         $roleId = (int) ($_POST['role_id'] ?? 0);
-        $fullName = trim($_POST['full_name'] ?? '');
-        $jobTitle = trim($_POST['job_title'] ?? '');
-        $phone = trim($_POST['phone'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $username = trim($_POST['username'] ?? '');
-        $password = $_POST['password'] ?? '';
-        $accountStatus = trim($_POST['account_status'] ?? 'active');
+        $fullName = trim((string) ($_POST['full_name'] ?? ''));
+        $phone = trim((string) ($_POST['phone'] ?? ''));
+        $email = trim((string) ($_POST['email'] ?? ''));
+        $username = trim((string) ($_POST['username'] ?? ''));
+        $password = (string) ($_POST['password'] ?? '');
+        $accountStatus = trim((string) ($_POST['account_status'] ?? 'active'));
 
-        if ($roleId <= 0 || $fullName === '' || $jobTitle === '' || $username === '') {
+        if ($roleId <= 0 || $fullName === '' || $username === '') {
             Session::flash('error', 'Vui lòng nhập đầy đủ các trường bắt buộc của người dùng.');
             return null;
         }
@@ -198,13 +246,22 @@ class UserController
             return null;
         }
 
+        $roleStatement = $connection->prepare('SELECT display_name FROM roles WHERE id = :id LIMIT 1');
+        $roleStatement->execute(['id' => $roleId]);
+        $role = $roleStatement->fetch();
+
+        if (! $role) {
+            Session::flash('error', 'Vai trò người dùng không hợp lệ.');
+            return null;
+        }
+
         if ($email !== '' && ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
             Session::flash('error', 'Email không hợp lệ.');
             return null;
         }
 
         if ($requirePassword && strlen($password) < 6) {
-            Session::flash('error', 'Mật khẩu mới phải từ 6 ký tự trở lên.');
+            Session::flash('error', 'Mật khẩu phải từ 6 ký tự trở lên.');
             return null;
         }
 
@@ -214,13 +271,14 @@ class UserController
                 Session::flash('error', 'Mật khẩu phải từ 6 ký tự trở lên.');
                 return null;
             }
+
             $passwordHash = password_hash($password, PASSWORD_DEFAULT);
         }
 
         return [
             'role_id' => $roleId,
             'full_name' => $fullName,
-            'job_title' => $jobTitle,
+            'job_title' => $role['display_name'],
             'phone' => $phone !== '' ? $phone : null,
             'email' => $email !== '' ? $email : null,
             'username' => $username,

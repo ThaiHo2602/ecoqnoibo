@@ -10,6 +10,7 @@ return [
     'password' => '',
     'from_email' => '',
     'from_name' => 'Eco-Q House',
+    'contact_to_email' => 'hello@ecoqhouse.vn',
     'timeout' => 15,
     'log_file' => base_path('storage/logs/mail.log'),
 ];

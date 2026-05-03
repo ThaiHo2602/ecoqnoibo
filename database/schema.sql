@@ -12,6 +12,7 @@ DROP TABLE IF EXISTS lock_requests;
 DROP TABLE IF EXISTS room_media;
 DROP TABLE IF EXISTS rooms;
 DROP TABLE IF EXISTS branches;
+DROP TABLE IF EXISTS wards;
 DROP TABLE IF EXISTS systems;
 DROP TABLE IF EXISTS districts;
 DROP TABLE IF EXISTS users;
@@ -34,6 +35,8 @@ CREATE TABLE users (
   password VARCHAR(255) NOT NULL,
   account_status ENUM('active', 'locked') NOT NULL DEFAULT 'active',
   last_login_at DATETIME NULL,
+  remember_token_hash VARCHAR(255) NULL,
+  remember_token_expires_at DATETIME NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_users_role FOREIGN KEY (role_id) REFERENCES roles(id)
@@ -54,9 +57,18 @@ CREATE TABLE systems (
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
+CREATE TABLE wards (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(150) NOT NULL,
+  description TEXT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
 CREATE TABLE branches (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   system_id INT UNSIGNED NOT NULL,
+  ward_id INT UNSIGNED NOT NULL,
   district_id INT UNSIGNED NOT NULL,
   name VARCHAR(150) NOT NULL,
   address VARCHAR(255) NOT NULL,
@@ -64,8 +76,10 @@ CREATE TABLE branches (
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_branches_system FOREIGN KEY (system_id) REFERENCES systems(id) ON DELETE CASCADE,
+  CONSTRAINT fk_branches_ward FOREIGN KEY (ward_id) REFERENCES wards(id),
   CONSTRAINT fk_branches_district FOREIGN KEY (district_id) REFERENCES districts(id),
-  UNIQUE KEY uq_branch_per_system (system_id, name)
+  KEY idx_branches_system (system_id),
+  UNIQUE KEY uq_branch_per_ward (ward_id, name)
 ) ENGINE=InnoDB;
 
 CREATE TABLE rooms (
@@ -73,12 +87,13 @@ CREATE TABLE rooms (
   branch_id INT UNSIGNED NOT NULL,
   room_number VARCHAR(50) NOT NULL,
   price DECIMAL(12, 2) NOT NULL DEFAULT 0,
-  room_type ENUM('co_gac', 'khong_gac') NOT NULL,
+  room_type ENUM('duplet', 'studio', 'one_bedroom', 'two_bedroom', 'kiot') NOT NULL,
   electricity_fee DECIMAL(10, 2) NOT NULL DEFAULT 0,
   water_fee DECIMAL(10, 2) NOT NULL DEFAULT 0,
   service_fee DECIMAL(10, 2) NOT NULL DEFAULT 0,
   parking_fee DECIMAL(10, 2) NOT NULL DEFAULT 0,
   status ENUM('chua_lock', 'dang_giu', 'da_lock') NOT NULL DEFAULT 'chua_lock',
+  is_public_visible TINYINT(1) NOT NULL DEFAULT 0,
   furniture_status ENUM('co_noi_that', 'khong_noi_that') NOT NULL,
   has_balcony TINYINT(1) NOT NULL DEFAULT 0,
   window_type ENUM('cua_so_troi', 'cua_so_hanh_lang', 'cua_so_gieng_troi') NOT NULL,
@@ -106,7 +121,7 @@ CREATE TABLE lock_requests (
   room_id INT UNSIGNED NOT NULL,
   requested_by INT UNSIGNED NOT NULL,
   approved_by INT UNSIGNED NULL,
-  request_status ENUM('pending', 'approved', 'rejected') NOT NULL DEFAULT 'pending',
+  request_status ENUM('pending', 'approved', 'rejected', 'undone') NOT NULL DEFAULT 'pending',
   request_note TEXT NULL,
   decision_note TEXT NULL,
   requested_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -121,6 +136,9 @@ CREATE TABLE customer_leads (
   created_by INT UNSIGNED NOT NULL,
   assigned_to INT UNSIGNED NULL,
   assigned_by INT UNSIGNED NULL,
+  assignment_status ENUM('pending', 'accepted', 'rejected') NULL,
+  assignment_response_note TEXT NULL,
+  assignment_responded_at DATETIME NULL,
   customer_name VARCHAR(150) NOT NULL,
   phone VARCHAR(20) NOT NULL,
   note TEXT NULL,
@@ -171,10 +189,15 @@ INSERT INTO systems (name, description, is_active) VALUES
 ('Long Thinh', 'He thong tro Long Thinh', 1),
 ('An Phu', 'He thong tro An Phu', 1);
 
-INSERT INTO branches (system_id, district_id, name, address, manager_phone) VALUES
-((SELECT id FROM systems WHERE name = 'Long Thinh'), (SELECT id FROM districts WHERE name = 'Quan 7'), 'Long Thinh 1', '123 Nguyen Thi Thap, Quan 7', '0911111111'),
-((SELECT id FROM systems WHERE name = 'Long Thinh'), (SELECT id FROM districts WHERE name = 'Quan Binh Thanh'), 'Long Thinh 2', '45 Xo Viet Nghe Tinh, Binh Thanh', '0922222222'),
-((SELECT id FROM systems WHERE name = 'An Phu'), (SELECT id FROM districts WHERE name = 'Quan Tan Binh'), 'An Phu 1', '88 Cong Hoa, Tan Binh', '0933333333');
+INSERT INTO wards (name, description) VALUES
+('Phuong Tan Phong', 'Khu vuc Quan 7'),
+('Phuong 25', 'Khu vuc Binh Thanh'),
+('Phuong 13', 'Khu vuc Tan Binh');
+
+INSERT INTO branches (system_id, ward_id, district_id, name, address, manager_phone) VALUES
+((SELECT id FROM systems WHERE name = 'Long Thinh'), (SELECT id FROM wards WHERE name = 'Phuong Tan Phong'), (SELECT id FROM districts WHERE name = 'Quan 7'), 'Long Thinh 1', '123 Nguyen Thi Thap, Quan 7', '0911111111'),
+((SELECT id FROM systems WHERE name = 'Long Thinh'), (SELECT id FROM wards WHERE name = 'Phuong 25'), (SELECT id FROM districts WHERE name = 'Quan Binh Thanh'), 'Long Thinh 2', '45 Xo Viet Nghe Tinh, Binh Thanh', '0922222222'),
+((SELECT id FROM systems WHERE name = 'An Phu'), (SELECT id FROM wards WHERE name = 'Phuong 13'), (SELECT id FROM districts WHERE name = 'Quan Tan Binh'), 'An Phu 1', '88 Cong Hoa, Tan Binh', '0933333333');
 
 INSERT INTO rooms (
   branch_id,
@@ -186,14 +209,15 @@ INSERT INTO rooms (
   service_fee,
   parking_fee,
   status,
+  is_public_visible,
   furniture_status,
   has_balcony,
   window_type,
   note
 ) VALUES
-((SELECT id FROM branches WHERE name = 'Long Thinh 1'), 'P101', 3500000, 'co_gac', 3500, 120000, 150000, 100000, 'chua_lock', 'co_noi_that', 1, 'cua_so_troi', 'Phong gan cau thang, phu hop 1-2 nguoi.'),
-((SELECT id FROM branches WHERE name = 'Long Thinh 1'), 'P102', 2800000, 'khong_gac', 3500, 100000, 150000, 100000, 'dang_giu', 'khong_noi_that', 0, 'cua_so_hanh_lang', 'Dang co khach giu cho den het ngay.'),
-((SELECT id FROM branches WHERE name = 'An Phu 1'), 'A201', 4200000, 'co_gac', 4000, 150000, 200000, 120000, 'da_lock', 'co_noi_that', 1, 'cua_so_gieng_troi', 'Da lock thanh cong cho khach moi.');
+((SELECT id FROM branches WHERE name = 'Long Thinh 1'), 'P101', 3500000, 'duplet', 3500, 120000, 150000, 100000, 'chua_lock', 1, 'co_noi_that', 1, 'cua_so_troi', 'Phong gan cau thang, phu hop 1-2 nguoi.'),
+((SELECT id FROM branches WHERE name = 'Long Thinh 1'), 'P102', 2800000, 'studio', 3500, 100000, 150000, 100000, 'dang_giu', 0, 'khong_noi_that', 0, 'cua_so_hanh_lang', 'Dang co khach giu cho den het ngay.'),
+((SELECT id FROM branches WHERE name = 'An Phu 1'), 'A201', 4200000, 'one_bedroom', 4000, 150000, 200000, 120000, 'da_lock', 0, 'co_noi_that', 1, 'cua_so_gieng_troi', 'Da lock thanh cong cho khach moi.');
 
 INSERT INTO lock_requests (room_id, requested_by, approved_by, request_status, request_note, decision_note, requested_at, decided_at) VALUES
 ((SELECT id FROM rooms WHERE room_number = 'P102'), (SELECT id FROM users WHERE username = 'staff'), NULL, 'pending', 'Khach hen chuyen vao cuoi tuan nay.', NULL, NOW(), NULL),
@@ -208,6 +232,7 @@ INSERT INTO customer_leads (
   created_by,
   assigned_to,
   assigned_by,
+  assignment_status,
   customer_name,
   phone,
   note,
@@ -216,5 +241,5 @@ INSERT INTO customer_leads (
   status,
   selected_room_id
 ) VALUES
-((SELECT id FROM users WHERE username = 'collaborator'), NULL, NULL, 'Khach Hang Mau 1', '0988000001', 'Hen gap vao thu hai de xem phong.', 'week', DATE_ADD(NOW(), INTERVAL 2 DAY), 'new', NULL),
-((SELECT id FROM users WHERE username = 'collaborator'), (SELECT id FROM users WHERE username = 'staff'), (SELECT id FROM users WHERE username = 'director'), 'Khach Hang Mau 2', '0988000002', 'Da duoc phan cho nhan vien theo doi.', 'month', DATE_ADD(NOW(), INTERVAL 5 DAY), 'assigned', NULL);
+((SELECT id FROM users WHERE username = 'collaborator'), NULL, NULL, NULL, 'Khach Hang Mau 1', '0988000001', 'Hen gap vao thu hai de xem phong.', 'week', DATE_ADD(NOW(), INTERVAL 2 DAY), 'new', NULL),
+((SELECT id FROM users WHERE username = 'collaborator'), (SELECT id FROM users WHERE username = 'staff'), (SELECT id FROM users WHERE username = 'director'), 'accepted', 'Khach Hang Mau 2', '0988000002', 'Da duoc phan cho nhan vien theo doi.', 'month', DATE_ADD(NOW(), INTERVAL 5 DAY), 'assigned', NULL);

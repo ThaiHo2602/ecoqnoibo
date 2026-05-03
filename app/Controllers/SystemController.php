@@ -27,14 +27,16 @@ class SystemController
         )->fetchAll();
 
         $branches = $connection->query(
-            "SELECT branches.*, systems.name AS system_name, districts.name AS district_name
+            "SELECT branches.*, systems.name AS system_name, wards.name AS ward_name, districts.name AS district_name
              FROM branches
              INNER JOIN systems ON systems.id = branches.system_id
+             LEFT JOIN wards ON wards.id = branches.ward_id
              INNER JOIN districts ON districts.id = branches.district_id
              ORDER BY systems.name ASC, branches.name ASC"
         )->fetchAll();
 
         $districts = $connection->query('SELECT * FROM districts ORDER BY name ASC')->fetchAll();
+        $wards = $connection->query('SELECT id, name FROM wards ORDER BY name ASC')->fetchAll();
 
         $branchesBySystem = [];
         foreach ($branches as $branch) {
@@ -64,6 +66,7 @@ class SystemController
             'pageTitle' => 'Hệ thống',
             'systems' => $systems,
             'branchesBySystem' => $branchesBySystem,
+            'wards' => $wards,
             'districts' => $districts,
             'editSystem' => $editSystem,
             'editBranch' => $editBranch,
@@ -173,6 +176,42 @@ class SystemController
         $user = Auth::user();
         activity_log((int) $user['id'], 'delete', 'systems', 'Xóa hệ thống #' . $id . ': ' . $systemData['name']);
         Session::flash('success', 'Đã xóa hệ thống thành công.');
+        redirect('/systems');
+    }
+
+    public function bulkDelete(): void
+    {
+        Auth::requireLogin();
+        Auth::authorize(['director', 'manager']);
+
+        $ids = array_values(array_unique(array_filter(array_map('intval', $_POST['ids'] ?? []))));
+        if ($ids === []) {
+            Session::flash('error', 'Vui lòng chọn ít nhất một hệ thống để xóa.');
+            redirect('/systems');
+        }
+
+        $connection = Database::connection();
+        $deleted = 0;
+        $skipped = 0;
+        $user = Auth::user();
+        $checkStatement = $connection->prepare('SELECT COUNT(*) FROM branches WHERE system_id = :id');
+        $deleteStatement = $connection->prepare('DELETE FROM systems WHERE id = :id');
+
+        foreach ($ids as $id) {
+            $checkStatement->execute(['id' => $id]);
+            if ((int) $checkStatement->fetchColumn() > 0) {
+                $skipped++;
+                continue;
+            }
+
+            $deleteStatement->execute(['id' => $id]);
+            if ($deleteStatement->rowCount() > 0) {
+                $deleted++;
+                activity_log((int) $user['id'], 'bulk_delete', 'systems', 'Xóa hàng loạt hệ thống #' . $id);
+            }
+        }
+
+        Session::flash($deleted > 0 ? 'success' : 'error', 'Đã xóa ' . $deleted . ' hệ thống. Bỏ qua ' . $skipped . ' hệ thống đang có chi nhánh.');
         redirect('/systems');
     }
 }
