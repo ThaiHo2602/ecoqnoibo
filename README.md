@@ -173,11 +173,6 @@ Nên backup database trước khi chạy patch:
 mysqldump -u root ecoq_noibo > backup_ecoq_noibo.sql
 ```
 
-## Ghi chú về tiếng Việt và mã hóa
-
-Toàn bộ file nên lưu bằng UTF-8. Database cũng nên dùng `utf8mb4_unicode_ci`.
-
-Không nên dùng lệnh ghi file mặc định của PowerShell như `Set-Content` nếu chưa chỉ rõ encoding, vì dễ gây lỗi mojibake. Khi chỉnh file thủ công, hãy dùng editor lưu UTF-8.
 
 ## Upload và thư mục runtime
 
@@ -191,23 +186,6 @@ Các thư mục runtime không nên commit lên Git:
 
 Trên hosting thật, cần đảm bảo các thư mục này có quyền ghi cho PHP/Apache, đặc biệt là `storage/uploads/` nếu dùng upload ảnh/video phòng.
 
-## Triển khai lên hosting
-
-### Hosting PHP/cPanel/VPS
-
-1. Upload source lên hosting.
-2. Trỏ document root về thư mục `public/` nếu hosting cho phép.
-3. Nếu document root không trỏ được vào `public/`, giữ file `.htaccess` ở root và `public/.htaccess` để rewrite hoạt động.
-4. Tạo database MySQL và import `database/schema.sql`.
-5. Sửa `config/app.php` theo thông tin database và domain thật.
-6. Đảm bảo các thư mục trong `storage/` có quyền ghi.
-7. Mở domain và kiểm tra `/login`, `/app`.
-
-### GitHub Pages
-
-GitHub Pages chỉ chạy HTML/CSS/JS tĩnh, không chạy PHP và không kết nối MySQL. Vì vậy dự án này không thể chạy đầy đủ trên GitHub Pages.
-
-Nếu chỉ muốn xem giao diện tĩnh, bạn có thể mở một số file HTML/PHP như trang tĩnh, nhưng các chức năng đăng nhập, quản lý phòng, database, upload và lock phòng sẽ không hoạt động.
 
 ## Các URL quan trọng
 
