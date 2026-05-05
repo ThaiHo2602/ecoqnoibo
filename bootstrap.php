@@ -28,7 +28,17 @@ function app_config(): array
     static $config;
 
     if ($config === null) {
-        $config = require __DIR__ . '/config/app.php';
+        $config = [];
+
+        foreach (glob(__DIR__ . '/config/*.php') ?: [] as $file) {
+            $key = pathinfo($file, PATHINFO_FILENAME);
+            $loaded = require $file;
+            $config[$key] = $loaded;
+
+            if ($key === 'app' && is_array($loaded)) {
+                $config = array_merge($loaded, $config);
+            }
+        }
     }
 
     return $config;
@@ -66,17 +76,71 @@ function public_path(string $path = ''): string
     return base_path('public' . ($path ? DIRECTORY_SEPARATOR . ltrim($path, '\\/') : ''));
 }
 
+function app_base_url(): string
+{
+    $configuredBaseUrl = rtrim((string) config('base_url', ''), '/');
+
+    if (PHP_SAPI === 'cli') {
+        return $configuredBaseUrl;
+    }
+
+    $configuredHost = strtolower((string) (parse_url($configuredBaseUrl, PHP_URL_HOST) ?? ''));
+    $configuredPath = trim((string) (parse_url($configuredBaseUrl, PHP_URL_PATH) ?? ''), '/');
+
+    $forwardedHost = trim((string) ($_SERVER['HTTP_X_FORWARDED_HOST'] ?? ''));
+    $requestHost = $forwardedHost !== ''
+        ? trim(explode(',', $forwardedHost)[0])
+        : trim((string) ($_SERVER['HTTP_HOST'] ?? ''));
+    $requestHost = preg_replace('/:\d+$/', '', $requestHost ?? '') ?? '';
+
+    if ($requestHost === '') {
+        return $configuredBaseUrl;
+    }
+
+    $httpsIndicators = [
+        strtolower((string) ($_SERVER['HTTPS'] ?? '')),
+        strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')),
+        strtolower((string) ($_SERVER['REQUEST_SCHEME'] ?? '')),
+    ];
+
+    $scheme = in_array('https', $httpsIndicators, true) || in_array('on', $httpsIndicators, true)
+        ? 'https'
+        : 'http';
+
+    $configuredIsLocal = in_array($configuredHost, ['', 'localhost', '127.0.0.1'], true);
+    $requestMatchesConfigured = $configuredHost !== '' && strcasecmp($configuredHost, $requestHost) === 0;
+
+    if (! $configuredIsLocal && $requestMatchesConfigured) {
+        return $configuredBaseUrl;
+    }
+
+    $requestPath = trim((string) (parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? ''), '/');
+    $resolvedBasePath = '';
+
+    if ($configuredPath !== '' && ($requestPath === $configuredPath || str_starts_with($requestPath, $configuredPath . '/'))) {
+        $resolvedBasePath = $configuredPath;
+    }
+
+    return $scheme . '://' . $requestHost . ($resolvedBasePath !== '' ? '/' . $resolvedBasePath : '');
+}
+
 function asset(string $path): string
 {
-    return rtrim(config('base_url'), '/') . '/' . ltrim($path, '/');
+    return rtrim(app_base_url(), '/') . '/' . ltrim($path, '/');
 }
 
 function url(string $path = ''): string
 {
-    return rtrim(config('base_url'), '/') . '/' . ltrim($path, '/');
+    return rtrim(app_base_url(), '/') . '/' . ltrim($path, '/');
 }
 
-function redirect(string $path): never
+function media_url(string $path): string
+{
+    $normalizedPath = str_replace('\\', '/', ltrim($path, '\\/'));
+    return url($normalizedPath);
+}
+
+function redirect(string $path): void
 {
     header('Location: ' . url($path));
     exit;
@@ -100,7 +164,7 @@ function e(string|null $value): string
 function is_current_path(string $path): bool
 {
     $requestPath = trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/', '/');
-    $basePath = trim(parse_url(config('base_url'), PHP_URL_PATH) ?? '', '/');
+    $basePath = trim(parse_url(app_base_url(), PHP_URL_PATH) ?? '', '/');
 
     if ($basePath !== '' && str_starts_with($requestPath, $basePath)) {
         $requestPath = trim(substr($requestPath, strlen($basePath)), '/');
@@ -112,7 +176,7 @@ function is_current_path(string $path): bool
 function current_path(): string
 {
     $requestPath = trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/', '/');
-    $basePath = trim(parse_url(config('base_url'), PHP_URL_PATH) ?? '', '/');
+    $basePath = trim(parse_url(app_base_url(), PHP_URL_PATH) ?? '', '/');
 
     if ($basePath !== '' && str_starts_with($requestPath, $basePath)) {
         $requestPath = trim(substr($requestPath, strlen($basePath)), '/');
@@ -129,6 +193,70 @@ function is_path_prefix(string $prefix): bool
 function request_method(): string
 {
     return strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+}
+
+function csrf_token(): string
+{
+    $token = Session::get('_csrf_token');
+
+    if (! is_string($token) || $token === '') {
+        $token = bin2hex(random_bytes(32));
+        Session::put('_csrf_token', $token);
+    }
+
+    return $token;
+}
+
+function csrf_field(): string
+{
+    return '<input type="hidden" name="_csrf_token" value="'
+        . htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8')
+        . '">';
+}
+
+function csrf_verify(): bool
+{
+    if (request_method() !== 'POST') {
+        return true;
+    }
+
+    $sessionToken = Session::get('_csrf_token');
+    if (! is_string($sessionToken) || $sessionToken === '') {
+        return false;
+    }
+
+    $submittedToken = $_POST['_csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+    if (! is_string($submittedToken) || $submittedToken === '') {
+        return false;
+    }
+
+    return hash_equals($sessionToken, $submittedToken);
+}
+
+function is_ajax_request(): bool
+{
+    $requestedWith = strtolower((string) ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? ''));
+    $accept = strtolower((string) ($_SERVER['HTTP_ACCEPT'] ?? ''));
+
+    return $requestedWith === 'xmlhttprequest' || str_contains($accept, 'application/json');
+}
+
+function csrf_reject(): void
+{
+    http_response_code(419);
+
+    if (is_ajax_request()) {
+        header('Content-Type: application/json; charset=UTF-8');
+        echo json_encode([
+            'success' => false,
+            'message' => 'Phiên thao tác đã hết hạn. Vui lòng tải lại trang và thử lại.',
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    Session::flash('error', 'Phiên thao tác đã hết hạn. Vui lòng tải lại trang và thử lại.');
+    Session::flash('contact_error', 'Phiên thao tác đã hết hạn. Vui lòng tải lại trang và thử lại.');
+    redirect(current_path());
 }
 
 function activity_log(?int $userId, string $action, string $module, string $description): void
@@ -149,7 +277,7 @@ function activity_log(?int $userId, string $action, string $module, string $desc
     }
 }
 
-function abort(int $statusCode, string $message = ''): never
+function abort(int $statusCode, string $message = ''): void
 {
     http_response_code($statusCode);
     $pageTitle = match ($statusCode) {

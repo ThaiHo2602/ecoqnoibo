@@ -11,6 +11,17 @@ class Database
 
     public static function connection(): PDO
     {
+        $connection = self::tryConnection();
+
+        if (! $connection instanceof PDO) {
+            abort(500, 'Khong the ket noi co so du lieu. Vui long kiem tra file config/app.php va database/schema.sql.');
+        }
+
+        return $connection;
+    }
+
+    public static function tryConnection(): ?PDO
+    {
         if (self::$connection instanceof PDO) {
             return self::$connection;
         }
@@ -28,9 +39,11 @@ class Database
             self::$connection = new PDO($dsn, $config['username'], $config['password'], [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci',
             ]);
+            self::$connection->exec('SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci');
         } catch (PDOException $exception) {
-            abort(500, 'Khong the ket noi co so du lieu. Vui long kiem tra file config/app.php va database/schema.sql.');
+            return null;
         }
 
         return self::$connection;

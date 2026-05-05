@@ -18,6 +18,7 @@ class LockRequestController
             'status' => trim((string) query('status', '')),
             'staff_id' => (int) query('staff_id', 0),
             'system_id' => (int) query('system_id', 0),
+            'ward_id' => (int) query('ward_id', 0),
             'branch_id' => (int) query('branch_id', 0),
         ];
 
@@ -25,6 +26,7 @@ class LockRequestController
         $currentUser = Auth::user();
 
         $systems = $connection->query('SELECT id, name FROM systems ORDER BY name ASC')->fetchAll();
+        $wards = $connection->query('SELECT id, name FROM wards ORDER BY name ASC')->fetchAll();
         $staffUsers = $connection->query(
             "SELECT users.id, users.full_name
              FROM users
@@ -33,9 +35,10 @@ class LockRequestController
              ORDER BY users.full_name ASC"
         )->fetchAll();
         $branches = $connection->query(
-            "SELECT branches.id, branches.name, systems.name AS system_name
+            "SELECT branches.id, branches.name, branches.ward_id, systems.name AS system_name, wards.name AS ward_name
              FROM branches
              INNER JOIN systems ON systems.id = branches.system_id
+             LEFT JOIN wards ON wards.id = branches.ward_id
              ORDER BY systems.name ASC, branches.name ASC"
         )->fetchAll();
 
@@ -44,9 +47,11 @@ class LockRequestController
                        rooms.status AS room_status,
                        rooms.price,
                        branches.id AS branch_id,
+                       branches.ward_id,
                        branches.name AS branch_name,
                        systems.id AS system_id,
                        systems.name AS system_name,
+                       wards.name AS ward_name,
                        districts.name AS district_name,
                        requester.full_name AS requester_name,
                        approver.full_name AS approver_name
@@ -54,6 +59,7 @@ class LockRequestController
                 INNER JOIN rooms ON rooms.id = lock_requests.room_id
                 INNER JOIN branches ON branches.id = rooms.branch_id
                 INNER JOIN systems ON systems.id = branches.system_id
+                LEFT JOIN wards ON wards.id = branches.ward_id
                 INNER JOIN districts ON districts.id = branches.district_id
                 INNER JOIN users AS requester ON requester.id = lock_requests.requested_by
                 LEFT JOIN users AS approver ON approver.id = lock_requests.approved_by
@@ -77,6 +83,10 @@ class LockRequestController
             $sql .= ' AND systems.id = :system_id';
             $params['system_id'] = $filters['system_id'];
         }
+        if ($filters['ward_id'] > 0) {
+            $sql .= ' AND branches.ward_id = :ward_id';
+            $params['ward_id'] = $filters['ward_id'];
+        }
         if ($filters['branch_id'] > 0) {
             $sql .= ' AND branches.id = :branch_id';
             $params['branch_id'] = $filters['branch_id'];
@@ -93,6 +103,7 @@ class LockRequestController
             'requests' => $requests,
             'filters' => $filters,
             'systems' => $systems,
+            'wards' => $wards,
             'branches' => $branches,
             'staffUsers' => $staffUsers,
             'isManagerView' => $isManagerView,
@@ -106,10 +117,11 @@ class LockRequestController
 
         $roomId = (int) ($_POST['room_id'] ?? 0);
         $requestNote = trim($_POST['request_note'] ?? '');
+        $returnTo = $this->resolveReturnTo();
 
         if ($roomId <= 0) {
             Session::flash('error', 'Phòng không hợp lệ để gửi yêu cầu lock.');
-            redirect('/rooms');
+            redirect($returnTo);
         }
 
         $connection = Database::connection();
@@ -119,12 +131,12 @@ class LockRequestController
 
         if (! $room) {
             Session::flash('error', 'Phòng không tồn tại.');
-            redirect('/rooms');
+            redirect($returnTo);
         }
 
         if ($room['status'] !== 'chua_lock') {
-            Session::flash('error', 'Chỉ có thể gửi lock với phòng đang ở trạng thái chưa lock.');
-            redirect('/rooms');
+            Session::flash('error', 'Chỉ có thể gửi lock với phòng đang ở trạng thái Chưa lock.');
+            redirect($returnTo);
         }
 
         $pendingStatement = $connection->prepare(
@@ -134,7 +146,7 @@ class LockRequestController
         $pendingStatement->execute(['room_id' => $roomId]);
         if ((int) $pendingStatement->fetchColumn() > 0) {
             Session::flash('error', 'Phòng này đã có yêu cầu lock đang chờ duyệt.');
-            redirect('/rooms');
+            redirect($returnTo);
         }
 
         $currentUser = Auth::user();
@@ -156,13 +168,13 @@ class LockRequestController
             $connection->commit();
 
             activity_log((int) $currentUser['id'], 'request_lock', 'lock_requests', 'Gửi yêu cầu lock phòng #' . $roomId);
-            Session::flash('success', 'Đã gửi yêu cầu lock phòng thành công. Phòng chuyển sang trạng thái đang giữ.');
+            Session::flash('success', 'Đã gửi yêu cầu lock phòng thành công. Phòng đã chuyển sang trạng thái Đang giữ.');
         } catch (\Throwable) {
             $connection->rollBack();
             Session::flash('error', 'Gửi yêu cầu lock thất bại. Vui lòng thử lại.');
         }
 
-        redirect('/rooms');
+        redirect($returnTo);
     }
 
     public function approve(): void
@@ -177,6 +189,65 @@ class LockRequestController
         Auth::requireLogin();
         Auth::authorize(['director', 'manager']);
         $this->decide('rejected', 'chua_lock', 'reject_lock');
+    }
+
+    public function undo(): void
+    {
+        Auth::requireLogin();
+        Auth::authorize(['director', 'manager']);
+
+        $requestId = (int) ($_POST['id'] ?? 0);
+        if ($requestId <= 0) {
+            Session::flash('error', 'Yêu cầu lock không hợp lệ.');
+            redirect('/lock-requests');
+        }
+
+        $connection = Database::connection();
+        $statement = $connection->prepare(
+            "SELECT lock_requests.*, rooms.id AS room_id
+             FROM lock_requests
+             INNER JOIN rooms ON rooms.id = lock_requests.room_id
+             WHERE lock_requests.id = :id
+             LIMIT 1"
+        );
+        $statement->execute(['id' => $requestId]);
+        $request = $statement->fetch();
+
+        if (! $request || $request['request_status'] !== 'approved') {
+            Session::flash('error', 'Chỉ có thể hoàn tác yêu cầu đã duyệt.');
+            redirect('/lock-requests');
+        }
+
+        $currentUser = Auth::user();
+        $connection->beginTransaction();
+
+        try {
+            $connection->prepare(
+                "UPDATE lock_requests
+                 SET request_status = 'undone',
+                     approved_by = :approved_by,
+                     decision_note = CONCAT(COALESCE(decision_note, ''), :undo_note),
+                     decided_at = NOW()
+                 WHERE id = :id"
+            )->execute([
+                'approved_by' => $currentUser['id'],
+                'undo_note' => "\n[Hoan tac lock]",
+                'id' => $requestId,
+            ]);
+
+            $connection->prepare("UPDATE rooms SET status = 'chua_lock' WHERE id = :room_id")
+                ->execute(['room_id' => $request['room_id']]);
+
+            $connection->commit();
+
+            activity_log((int) $currentUser['id'], 'undo_lock', 'lock_requests', 'Hoàn tác lock #' . $requestId);
+            Session::flash('success', 'Đã hoàn tác lock. Phòng đã quay về trạng thái chưa lock.');
+        } catch (\Throwable) {
+            $connection->rollBack();
+            Session::flash('error', 'Hoàn tác lock thất bại. Vui lòng thử lại.');
+        }
+
+        redirect('/lock-requests');
     }
 
     private function decide(string $requestStatus, string $roomStatus, string $logAction): void
@@ -240,12 +311,23 @@ class LockRequestController
             activity_log((int) $currentUser['id'], $logAction, 'lock_requests', 'Xử lý yêu cầu #' . $requestId . ' => ' . $requestStatus);
             Session::flash('success', $requestStatus === 'approved'
                 ? 'Đã duyệt lock phòng thành công.'
-                : 'Đã từ chối yêu cầu lock. Phòng đã quay về trạng thái chưa lock.');
+                : 'Đã từ chối yêu cầu lock. Phòng đã quay về trạng thái trống.');
         } catch (\Throwable) {
             $connection->rollBack();
             Session::flash('error', 'Xử lý yêu cầu lock thất bại. Vui lòng thử lại.');
         }
 
         redirect('/lock-requests');
+    }
+
+    private function resolveReturnTo(): string
+    {
+        $returnTo = trim((string) ($_POST['return_to'] ?? ''));
+
+        if ($returnTo !== '' && str_starts_with($returnTo, '/')) {
+            return $returnTo;
+        }
+
+        return '/';
     }
 }

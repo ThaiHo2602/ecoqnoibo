@@ -10,9 +10,9 @@
 <body class="error-body">
     <div class="error-card">
         <div class="display-4 fw-bold">500</div>
-        <h1 class="h3 mt-3">He thong dang gap loi</h1>
-        <p class="text-muted"><?= e($message ?: 'Co loi xay ra trong qua trinh xu ly yeu cau.') ?></p>
-        <a href="<?= e(url('/')) ?>" class="btn btn-primary">Thu tai trang chu</a>
+        <h1 class="h3 mt-3">Hệ thống đang gặp lỗi</h1>
+        <p class="text-muted"><?= e($message ?: 'Có lỗi xảy ra trong quá trình xử lý yêu cầu.') ?></p>
+        <a href="<?= e(url('/')) ?>" class="btn btn-primary">Thử lại trang chủ</a>
     </div>
 </body>
 </html>

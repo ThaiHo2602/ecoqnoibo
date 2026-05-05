@@ -1,0 +1,13 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    RewriteRule ^assets/(.*)$ public/assets/$1 [L,QSA]
+    RewriteRule ^company/assets/(.*)$ public/company/assets/$1 [L,QSA]
+
+    RewriteRule ^(app|dashboard|login|logout|systems|branches|rooms|customers|reports|lock-requests|users|activity-logs|profile|gioi-thieu|du-an|chi-tiet-du-an|tin-tuc|bai-viet|tuyen-dung|viec-lam|lien-he)(/.*)?$ public/index.php [L,QSA]
+
+    RewriteCond %{REQUEST_URI} !/public/
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ public/$1 [L,QSA]
+</IfModule>

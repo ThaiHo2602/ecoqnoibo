@@ -7,7 +7,33 @@ class Session
     public static function start(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
-            session_start();
+            self::prepareSavePath();
+            @session_start();
+        }
+    }
+
+    private static function prepareSavePath(): void
+    {
+        $configuredPath = (string) ini_get('session.save_path');
+        $path = $configuredPath;
+
+        if (str_contains($path, ';')) {
+            $parts = explode(';', $path);
+            $path = (string) end($parts);
+        }
+
+        if ($path !== '' && is_dir($path) && is_writable($path)) {
+            return;
+        }
+
+        $fallbackPath = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR . 'sessions';
+
+        if (! is_dir($fallbackPath)) {
+            @mkdir($fallbackPath, 0775, true);
+        }
+
+        if (is_dir($fallbackPath) && is_writable($fallbackPath)) {
+            ini_set('session.save_path', $fallbackPath);
         }
     }
 

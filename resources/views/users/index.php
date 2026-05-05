@@ -2,16 +2,16 @@
     <div class="panel-card">
         <div class="panel-header">
             <div>
-                <h3>Bo loc nguoi dung</h3>
-                <p class="panel-subtitle mb-0">Loc theo vai tro, trang thai va tu khoa.</p>
+                <h3>Bộ lọc người dùng</h3>
+                <p class="panel-subtitle mb-0">Lọc theo vai trò, trạng thái và từ khóa.</p>
             </div>
         </div>
 
         <form method="GET" action="<?= e(url('/users')) ?>" class="d-grid gap-3">
             <div>
-                <label class="form-label">Vai tro</label>
+                <label class="form-label">Vai trò</label>
                 <select name="role" class="form-select">
-                    <option value="">Tat ca vai tro</option>
+                    <option value="">Tất cả vai trò</option>
                     <?php foreach ($roles as $role): ?>
                         <option value="<?= e($role['name']) ?>" <?= $filters['role'] === $role['name'] ? 'selected' : '' ?>><?= e($role['display_name']) ?></option>
                     <?php endforeach; ?>
@@ -19,22 +19,22 @@
             </div>
 
             <div>
-                <label class="form-label">Trang thai</label>
+                <label class="form-label">Trạng thái</label>
                 <select name="status" class="form-select">
-                    <option value="">Tat ca trang thai</option>
-                    <option value="active" <?= $filters['status'] === 'active' ? 'selected' : '' ?>>Hoat dong</option>
-                    <option value="locked" <?= $filters['status'] === 'locked' ? 'selected' : '' ?>>Bi khoa</option>
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="active" <?= $filters['status'] === 'active' ? 'selected' : '' ?>>Hoạt động</option>
+                    <option value="locked" <?= $filters['status'] === 'locked' ? 'selected' : '' ?>>Bị khóa</option>
                 </select>
             </div>
 
             <div>
-                <label class="form-label">Tu khoa</label>
-                <input type="text" name="keyword" class="form-control" value="<?= e($filters['keyword']) ?>" placeholder="Ho ten, username, sdt, email">
+                <label class="form-label">Từ khóa</label>
+                <input type="text" name="keyword" class="form-control" value="<?= e($filters['keyword']) ?>" placeholder="Họ tên, tài khoản, số điện thoại, email">
             </div>
 
             <div class="d-flex gap-2 flex-wrap">
-                <button type="submit" class="btn btn-primary">Ap dung bo loc</button>
-                <a href="<?= e(url('/users')) ?>" class="btn btn-outline-secondary">Xoa loc</a>
+                <button type="submit" class="btn btn-primary">Áp dụng bộ lọc</button>
+                <a href="<?= e(url('/users')) ?>" class="btn btn-outline-secondary">Xóa lọc</a>
             </div>
         </form>
     </div>
@@ -42,8 +42,8 @@
     <div class="panel-card">
         <div class="panel-header">
             <div>
-                <h3><?= $editUser ? 'Cap nhat nguoi dung' : 'Them nguoi dung moi' ?></h3>
-                <p class="panel-subtitle mb-0">Chi giam doc moi co quyen quan ly nhan su.</p>
+                <h3><?= $editUser ? 'Cập nhật người dùng' : 'Thêm người dùng mới' ?></h3>
+                <p class="panel-subtitle mb-0">Giám đốc quản lý tài khoản nội bộ theo vai trò, không cần nhập thêm chức vụ riêng.</p>
             </div>
         </div>
 
@@ -52,39 +52,33 @@
                 <input type="hidden" name="id" value="<?= e((string) $editUser['id']) ?>">
             <?php endif; ?>
 
-            <div class="grid-2">
-                <div>
-                    <label class="form-label">Ho ten</label>
-                    <input type="text" name="full_name" class="form-control" value="<?= e($editUser['full_name'] ?? '') ?>" required>
-                </div>
-                <div>
-                    <label class="form-label">Chuc vu</label>
-                    <input type="text" name="job_title" class="form-control" value="<?= e($editUser['job_title'] ?? '') ?>" required>
-                </div>
+            <div>
+                <label class="form-label">Họ tên</label>
+                <input type="text" name="full_name" class="form-control" value="<?= e($editUser['full_name'] ?? '') ?>" required>
             </div>
 
             <div class="grid-2">
                 <div>
-                    <label class="form-label">Vai tro</label>
+                    <label class="form-label">Vai trò</label>
                     <select name="role_id" class="form-select" required>
-                        <option value="">Chon vai tro</option>
+                        <option value="">Chọn vai trò</option>
                         <?php foreach ($roles as $role): ?>
                             <option value="<?= e((string) $role['id']) ?>" <?= (int) ($editUser['role_id'] ?? 0) === (int) $role['id'] ? 'selected' : '' ?>><?= e($role['display_name']) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
                 <div>
-                    <label class="form-label">Trang thai tai khoan</label>
+                    <label class="form-label">Trạng thái tài khoản</label>
                     <select name="account_status" class="form-select">
-                        <option value="active" <?= ($editUser['account_status'] ?? 'active') === 'active' ? 'selected' : '' ?>>Hoat dong</option>
-                        <option value="locked" <?= ($editUser['account_status'] ?? '') === 'locked' ? 'selected' : '' ?>>Bi khoa</option>
+                        <option value="active" <?= ($editUser['account_status'] ?? 'active') === 'active' ? 'selected' : '' ?>>Hoạt động</option>
+                        <option value="locked" <?= ($editUser['account_status'] ?? '') === 'locked' ? 'selected' : '' ?>>Bị khóa</option>
                     </select>
                 </div>
             </div>
 
             <div class="grid-2">
                 <div>
-                    <label class="form-label">So dien thoai</label>
+                    <label class="form-label">Số điện thoại</label>
                     <input type="text" name="phone" class="form-control" value="<?= e($editUser['phone'] ?? '') ?>">
                 </div>
                 <div>
@@ -95,19 +89,19 @@
 
             <div class="grid-2">
                 <div>
-                    <label class="form-label">Tai khoan</label>
+                    <label class="form-label">Tài khoản</label>
                     <input type="text" name="username" class="form-control" value="<?= e($editUser['username'] ?? '') ?>" required>
                 </div>
                 <div>
-                    <label class="form-label"><?= $editUser ? 'Mat khau moi (neu doi)' : 'Mat khau' ?></label>
+                    <label class="form-label"><?= $editUser ? 'Mật khẩu mới (nếu đổi)' : 'Mật khẩu' ?></label>
                     <input type="password" name="password" class="form-control" <?= $editUser ? '' : 'required' ?>>
                 </div>
             </div>
 
             <div class="d-flex gap-2 flex-wrap">
-                <button type="submit" class="btn btn-primary"><?= $editUser ? 'Luu cap nhat' : 'Them nguoi dung' ?></button>
+                <button type="submit" class="btn btn-primary"><?= $editUser ? 'Lưu cập nhật' : 'Thêm người dùng' ?></button>
                 <?php if ($editUser): ?>
-                    <a href="<?= e(url('/users')) ?>" class="btn btn-outline-secondary">Bo chinh sua</a>
+                    <a href="<?= e(url('/users')) ?>" class="btn btn-outline-secondary">Bỏ chỉnh sửa</a>
                 <?php endif; ?>
             </div>
         </form>
@@ -117,52 +111,55 @@
 <section class="panel-card mt-4">
     <div class="panel-header">
         <div>
-            <h3>Danh sach nguoi dung</h3>
-            <p class="panel-subtitle mb-0">Danh sach nhan su noi bo voi vai tro, trang thai va thong tin dang nhap.</p>
+            <h3>Danh sách người dùng</h3>
+            <p class="panel-subtitle mb-0">Danh sách nhân sự nội bộ với vai trò, trạng thái và thông tin đăng nhập.</p>
         </div>
-        <span class="badge text-bg-light"><?= e((string) count($users)) ?> nguoi dung</span>
+        <span class="badge text-bg-light"><?= e((string) count($users)) ?> người dùng</span>
     </div>
 
     <div class="table-responsive">
         <table class="table align-middle mb-0">
             <thead>
                 <tr>
-                    <th>Ho ten</th>
-                    <th>Vai tro</th>
-                    <th>Tai khoan</th>
-                    <th>Thong tin lien he</th>
-                    <th>Dang nhap cuoi</th>
-                    <th>Trang thai</th>
-                    <th class="text-end">Thao tac</th>
+                    <th>Họ tên</th>
+                    <th>Vai trò</th>
+                    <th>Tài khoản</th>
+                    <th>Thông tin liên hệ</th>
+                    <th>Đăng nhập cuối</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (! $users): ?>
                     <tr>
-                        <td colspan="7"><div class="empty-state my-3">Chua co nguoi dung nao phu hop voi bo loc hien tai.</div></td>
+                        <td colspan="7"><div class="empty-state my-3">Chưa có người dùng nào phù hợp với bộ lọc hiện tại.</div></td>
                     </tr>
                 <?php endif; ?>
 
                 <?php foreach ($users as $user): ?>
                     <tr>
-                        <td>
-                            <div class="fw-semibold"><?= e($user['full_name']) ?></div>
-                            <div class="text-muted small"><?= e($user['job_title']) ?></div>
-                        </td>
+                        <td><div class="fw-semibold"><?= e($user['full_name']) ?></div></td>
                         <td><?= e($user['role_display_name']) ?></td>
                         <td><?= e($user['username']) ?></td>
                         <td>
                             <div><?= e($user['phone'] ?: '-') ?></div>
                             <div class="text-muted small"><?= e($user['email'] ?: '-') ?></div>
                         </td>
-                        <td><?= e($user['last_login_at'] ?: 'Chua dang nhap') ?></td>
-                        <td><span class="status-pill <?= $user['account_status'] === 'active' ? 'status-approved' : 'status-rejected' ?>"><?= e($user['account_status'] === 'active' ? 'Hoat dong' : 'Bi khoa') ?></span></td>
+                        <td><?= e($user['last_login_at'] ?: 'Chưa đăng nhập') ?></td>
+                        <td><span class="status-pill <?= $user['account_status'] === 'active' ? 'status-approved' : 'status-rejected' ?>"><?= e($user['account_status'] === 'active' ? 'Hoạt động' : 'Bị khóa') ?></span></td>
                         <td class="text-end">
                             <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
-                                <a href="<?= e(url('/users?edit=' . $user['id'])) ?>" class="btn btn-sm btn-outline-primary">Sua</a>
-                                <form method="POST" action="<?= e(url('/users/delete')) ?>" onsubmit="return confirm('Ban chac chan muon xoa nguoi dung nay?');">
+                                <a href="<?= e(url('/users?edit=' . $user['id'])) ?>" class="btn btn-sm btn-outline-primary">Sửa</a>
+                                <?php if ($user['account_status'] === 'locked'): ?>
+                                    <form method="POST" action="<?= e(url('/users/unlock')) ?>">
+                                        <input type="hidden" name="id" value="<?= e((string) $user['id']) ?>">
+                                        <button type="submit" class="btn btn-sm btn-outline-success">Mở khóa</button>
+                                    </form>
+                                <?php endif; ?>
+                                <form method="POST" action="<?= e(url('/users/delete')) ?>" onsubmit="return confirm('Bạn chắc chắn muốn xóa người dùng này?');">
                                     <input type="hidden" name="id" value="<?= e((string) $user['id']) ?>">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">Xoa</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
                                 </form>
                             </div>
                         </td>
