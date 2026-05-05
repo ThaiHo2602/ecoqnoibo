@@ -1,0 +1,8 @@
+storage/tmp/
+storage/logs/
+storage/sessions/
+storage/cache/
+storage/uploads/
+
+.env
+*.zip
