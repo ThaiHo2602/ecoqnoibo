@@ -3,7 +3,7 @@
         <div class="panel-header">
             <div>
                 <h3>Bộ lọc chi nhánh</h3>
-                <p class="panel-subtitle mb-0">Lọc theo hệ thống, quận và từ khóa để quản lý nhanh hơn.</p>
+                <p class="panel-subtitle mb-0">Lọc theo hệ thống, phường, quận và từ khóa để quản lý nhanh hơn.</p>
             </div>
         </div>
 
@@ -46,7 +46,7 @@
 
             <div>
                 <label class="form-label">Từ khóa</label>
-                <input type="text" name="keyword" class="form-control" value="<?= e($filters['keyword']) ?>" placeholder="Tên, địa chỉ hoặc số điện thoại">
+                <input type="text" name="keyword" class="form-control" value="<?= e($filters['keyword']) ?>" placeholder="Tên chi nhánh hoặc số điện thoại">
             </div>
 
             <div class="d-flex gap-2 flex-wrap">
@@ -113,13 +113,30 @@
             </div>
 
             <div>
-                <label class="form-label">Địa chỉ</label>
-                <input type="text" name="address" class="form-control" value="<?= e($editBranch['address'] ?? '') ?>" required>
-            </div>
-
-            <div>
                 <label class="form-label">Số điện thoại quản lý</label>
                 <input type="text" name="manager_phone" class="form-control" value="<?= e($editBranch['manager_phone'] ?? '') ?>">
+            </div>
+
+            <div class="grid-2">
+                <div>
+                    <label class="form-label">Tiền điện</label>
+                    <input type="number" name="electricity_price" class="form-control" value="<?= e((string) ($editBranch['electricity_price'] ?? '0')) ?>" min="0" step="500">
+                </div>
+                <div>
+                    <label class="form-label">Tiền nước</label>
+                    <input type="number" name="water_price" class="form-control" value="<?= e((string) ($editBranch['water_price'] ?? '0')) ?>" min="0" step="1000">
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div>
+                    <label class="form-label">Phí gửi xe</label>
+                    <input type="number" name="parking_price" class="form-control" value="<?= e((string) ($editBranch['parking_price'] ?? '0')) ?>" min="0" step="1000">
+                </div>
+                <div>
+                    <label class="form-label">Phí dịch vụ</label>
+                    <input type="number" name="service_price" class="form-control" value="<?= e((string) ($editBranch['service_price'] ?? '0')) ?>" min="0" step="1000">
+                </div>
             </div>
 
             <div class="d-flex gap-2 flex-wrap">
@@ -136,7 +153,7 @@
     <div class="panel-header">
         <div>
             <h3>Danh sách chi nhánh</h3>
-            <p class="panel-subtitle mb-0">Đang hiển thị theo bộ lọc hiện tại. Ở bước sau mình sẽ nối thêm popup danh sách phòng theo chi nhánh.</p>
+            <p class="panel-subtitle mb-0">Đang hiển thị theo bộ lọc hiện tại.</p>
         </div>
         <span class="badge text-bg-light"><?= e((string) count($branches)) ?> chi nhánh</span>
     </div>
@@ -154,8 +171,8 @@
                     <th>Hệ thống</th>
                     <th>Phường</th>
                     <th>Quận</th>
-                    <th>Địa chỉ</th>
-                    <th>SDT quản lý</th>
+                    <th>SĐT quản lý</th>
+                    <th>Phí tòa nhà</th>
                     <th>Số phòng</th>
                     <th class="text-end">Thao tác</th>
                 </tr>
@@ -176,8 +193,12 @@
                         <td><?= e($branch['system_name']) ?></td>
                         <td><?= e($branch['ward_name'] ?: '-') ?></td>
                         <td><?= e($branch['district_name']) ?></td>
-                        <td><?= e($branch['address']) ?></td>
                         <td><?= e($branch['manager_phone'] ?: '-') ?></td>
+                        <td>
+                            <div class="text-muted small">Điện: <?= e(number_format((float) ($branch['electricity_price'] ?? 0), 0, ',', '.')) ?>đ</div>
+                            <div class="text-muted small">Nước: <?= e(number_format((float) ($branch['water_price'] ?? 0), 0, ',', '.')) ?>đ</div>
+                            <div class="text-muted small">DV/Xe: <?= e(number_format((float) ($branch['service_price'] ?? 0), 0, ',', '.')) ?>đ / <?= e(number_format((float) ($branch['parking_price'] ?? 0), 0, ',', '.')) ?>đ</div>
+                        </td>
                         <td><?= e((string) $branch['room_count']) ?></td>
                         <td class="text-end">
                             <div class="d-inline-flex gap-2 flex-wrap justify-content-end">

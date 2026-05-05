@@ -636,7 +636,7 @@ class RoomController
         $windowType = trim($_POST['window_type'] ?? '');
         $note = trim($_POST['note'] ?? '');
 
-        $allowedRoomTypes = ['duplet', 'studio', 'one_bedroom', 'two_bedroom', 'kiot'];
+        $allowedRoomTypes = ['duplex', 'studio', 'one_bedroom', 'two_bedroom', 'kiot'];
         $allowedStatuses = ['chua_lock', 'dang_giu', 'da_lock'];
         $allowedFurnitureStatuses = ['co_noi_that', 'khong_noi_that'];
         $allowedWindowTypes = ['cua_so_troi', 'cua_so_hanh_lang', 'cua_so_gieng_troi'];

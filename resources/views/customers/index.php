@@ -293,13 +293,19 @@ $canToggleAllCustomers = $isDirector || $isStaff;
         }
 
         try {
+            const formData = new FormData(form);
+            if (window.appCsrfToken && !formData.has('_csrf_token')) {
+                formData.append('_csrf_token', window.appCsrfToken);
+            }
+
             const response = await fetch(form.action, {
                 method: form.method || 'POST',
-                body: new FormData(form),
+                body: formData,
                 credentials: 'same-origin',
                 headers: {
                     'Accept': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-Token': window.appCsrfToken || '',
                 },
             });
 

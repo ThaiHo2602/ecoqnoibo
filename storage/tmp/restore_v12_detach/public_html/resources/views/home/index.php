@@ -5,7 +5,7 @@ $statusLabels = [
     'da_lock' => 'Đã lock',
 ];
 $typeLabels = [
-    'duplet' => 'Duplet',
+    'duplex' => 'duplex',
     'studio' => 'Studio',
     'one_bedroom' => '1 phòng ngủ',
     'two_bedroom' => '2 phòng ngủ',

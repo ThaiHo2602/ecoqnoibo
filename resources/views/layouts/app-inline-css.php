@@ -434,6 +434,130 @@ body.sidebar-collapsed .sidebar-edge-toggle::before {
     color: inherit;
 }
 
+.branch-card-badges {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    right: 14px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.branch-card-badges span,
+.branch-available-bar {
+    border-radius: 999px;
+    color: #fff;
+    font-weight: 800;
+    background: rgba(23, 58, 122, 0.86);
+}
+
+.branch-card-badges span {
+    padding: 7px 12px;
+    font-size: 0.76rem;
+}
+
+.branch-available-bar {
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+    padding: 10px 14px;
+    text-align: center;
+}
+
+.branch-detail-page {
+    display: grid;
+    gap: 22px;
+}
+
+.branch-detail-hero,
+.branch-detail-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+    gap: 22px;
+}
+
+.branch-detail-hero,
+.branch-gallery-panel,
+.branch-room-panel,
+.selected-room-card {
+    padding: 20px;
+    border-radius: 24px;
+    background: var(--panel);
+    border: 1px solid rgba(255, 255, 255, 0.74);
+    box-shadow: var(--shadow-sm);
+}
+
+.branch-fee-grid,
+.branch-room-picker,
+.branch-gallery-thumbs {
+    display: grid;
+    gap: 10px;
+}
+
+.branch-fee-grid,
+.branch-room-picker {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.branch-gallery-stage {
+    aspect-ratio: 16 / 10;
+    border-radius: 22px;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(23, 58, 122, 0.08), rgba(216, 170, 65, 0.14));
+}
+
+.branch-gallery-stage img,
+.branch-gallery-stage video,
+.branch-gallery-thumb img,
+.branch-gallery-thumb video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.branch-gallery-thumbs {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    margin-top: 12px;
+}
+
+.branch-gallery-thumb,
+.branch-room-option {
+    border: 1px solid rgba(23, 58, 122, 0.12);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.72);
+    overflow: hidden;
+}
+
+.branch-gallery-thumb {
+    aspect-ratio: 1 / 0.72;
+    padding: 0;
+}
+
+.branch-gallery-thumb.is-active,
+.branch-room-option.is-active {
+    border-color: var(--brand);
+}
+
+.branch-room-option {
+    min-height: 104px;
+    padding: 14px;
+    text-align: left;
+}
+
+.branch-room-option strong,
+.branch-room-option span,
+.branch-room-option em {
+    display: block;
+}
+
+.selected-room-price {
+    color: #ec7300;
+    font-size: 1.35rem;
+    font-weight: 900;
+}
+
 .listing-card-media {
     position: relative;
     aspect-ratio: 1 / 0.78;
@@ -582,8 +706,15 @@ body.sidebar-collapsed .sidebar-edge-toggle::before {
         flex-direction: column;
     }
 
+    .branch-detail-hero,
+    .branch-detail-layout {
+        grid-template-columns: 1fr;
+    }
+
     .listing-filters,
-    .listing-grid {
+    .listing-grid,
+    .branch-fee-grid,
+    .branch-room-picker {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
@@ -591,6 +722,9 @@ body.sidebar-collapsed .sidebar-edge-toggle::before {
 @media (max-width: 767.98px) {
     .listing-filters,
     .listing-grid,
+    .branch-fee-grid,
+    .branch-room-picker,
+    .branch-gallery-thumbs,
     .listing-summary {
         grid-template-columns: 1fr;
     }

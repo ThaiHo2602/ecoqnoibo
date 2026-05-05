@@ -64,6 +64,7 @@ class Auth
 
         unset($user['password']);
         $user['last_login_at'] = date('Y-m-d H:i:s');
+        self::regenerateSessionId();
         Session::put('auth_user', $user);
         self::issueRememberCookie((int) $user['id']);
 
@@ -176,6 +177,7 @@ class Auth
         }
 
         unset($user['password']);
+        self::regenerateSessionId();
         Session::put('auth_user', $user);
         self::issueRememberCookie((int) $user['id']);
 
@@ -208,6 +210,13 @@ class Auth
         ]);
 
         $_COOKIE[self::REMEMBER_COOKIE] = $userId . '|' . $token;
+    }
+
+    private static function regenerateSessionId(): void
+    {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_regenerate_id(true);
+        }
     }
 
     private static function forgetRememberCookie(): void

@@ -39,14 +39,11 @@ class RoomController
         $filters = $this->roomFilters();
         $perPage = 30;
         $currentPage = max(1, (int) query('page', 1));
-        $totalRooms = $this->countRooms($filters);
-        $totalPages = max(1, (int) ceil($totalRooms / $perPage));
+        $totalBranches = $this->countBranchCards($filters);
+        $totalPages = max(1, (int) ceil($totalBranches / $perPage));
         $currentPage = min($currentPage, $totalPages);
-        $rooms = $this->fetchRooms($filters, $perPage, ($currentPage - 1) * $perPage);
-        $roomIds = array_map(static fn (array $room): int => (int) $room['id'], $rooms);
-
-        $roomMediaMap = $this->roomMediaMap($roomIds);
-        $roomStats = $this->roomStatsForFilters($filters, $totalRooms);
+        $branchCards = $this->fetchBranchCards($filters, $perPage, ($currentPage - 1) * $perPage);
+        $roomStats = $this->roomStatsForFilters($filters, $this->countRooms($filters));
 
         View::render('home.index', [
             'pageTitle' => 'Trang chủ',
@@ -60,16 +57,67 @@ class RoomController
                  LEFT JOIN wards ON wards.id = branches.ward_id
                  ORDER BY systems.name ASC, branches.name ASC"
             )->fetchAll(),
-            'rooms' => $rooms,
-            'roomMediaMap' => $roomMediaMap,
+            'branchCards' => $branchCards,
             'filters' => $filters,
             'roomStats' => $roomStats,
             'pagination' => [
                 'current_page' => $currentPage,
                 'per_page' => $perPage,
-                'total_items' => $totalRooms,
+                'total_items' => $totalBranches,
                 'total_pages' => $totalPages,
             ],
+            'canRequestLock' => Auth::can(['staff']),
+        ]);
+    }
+
+    public function branchDetail(int $branchId): void
+    {
+        Auth::requireLogin();
+
+        $branch = $this->findBranch($branchId);
+        if (! $branch) {
+            abort(404, 'Không tìm thấy chi nhánh bạn đang xem.');
+        }
+
+        $filters = $this->roomFilters();
+        $filters['branch_id'] = $branchId;
+        $rooms = $this->fetchRooms($filters);
+
+        if ($rooms === []) {
+            $rooms = $this->fetchRooms([
+                'system_id' => 0,
+                'ward_id' => 0,
+                'branch_id' => $branchId,
+                'district_id' => 0,
+                'status' => '',
+                'room_type' => '',
+                'furniture_status' => '',
+                'price_min' => '',
+                'price_max' => '',
+                'keyword' => '',
+            ]);
+        }
+
+        $roomIds = array_map(static fn (array $room): int => (int) $room['id'], $rooms);
+        $roomMediaMap = $this->roomMediaMap($roomIds);
+        $selectedRoomId = 0;
+        foreach ($rooms as $room) {
+            if ($room['status'] === 'chua_lock') {
+                $selectedRoomId = (int) $room['id'];
+                break;
+            }
+        }
+        if ($selectedRoomId === 0 && $rooms !== []) {
+            $selectedRoomId = (int) $rooms[0]['id'];
+        }
+
+        View::render('branches.show', [
+            'pageTitle' => $branch['name'],
+            'branch' => $branch,
+            'rooms' => $rooms,
+            'roomMediaMap' => $roomMediaMap,
+            'selectedRoomId' => $selectedRoomId,
+            'filters' => $filters,
             'canRequestLock' => Auth::can(['staff']),
         ]);
     }
@@ -231,7 +279,8 @@ class RoomController
         }
 
         $downloadName = sprintf(
-            'room-%s-images.zip',
+            '%s_%s_images.zip',
+            preg_replace('/[^A-Za-z0-9_-]+/', '-', (string) ($room['branch_name'] ?? 'branch')),
             preg_replace('/[^A-Za-z0-9_-]+/', '-', (string) ($room['room_number'] ?? $roomId))
         );
 
@@ -272,11 +321,11 @@ class RoomController
         try {
             $connection->prepare(
                 'INSERT INTO rooms (
-                    branch_id, room_number, price, room_type, electricity_fee, water_fee,
-                    service_fee, parking_fee, status, is_public_visible, furniture_status, has_balcony, window_type, note
+                    branch_id, room_number, price, room_type,
+                    status, is_public_visible, furniture_status, has_balcony, window_type, note
                  ) VALUES (
-                    :branch_id, :room_number, :price, :room_type, :electricity_fee, :water_fee,
-                    :service_fee, :parking_fee, :status, :is_public_visible, :furniture_status, :has_balcony, :window_type, :note
+                    :branch_id, :room_number, :price, :room_type,
+                    :status, :is_public_visible, :furniture_status, :has_balcony, :window_type, :note
                  )'
             )->execute($data);
 
@@ -368,10 +417,6 @@ class RoomController
                     room_number = :room_number,
                     price = :price,
                     room_type = :room_type,
-                    electricity_fee = :electricity_fee,
-                    water_fee = :water_fee,
-                    service_fee = :service_fee,
-                    parking_fee = :parking_fee,
                     status = :status,
                     is_public_visible = :is_public_visible,
                     furniture_status = :furniture_status,
@@ -556,8 +601,11 @@ class RoomController
         $connection = Database::connection();
         $sql = "SELECT rooms.*,
                        branches.name AS branch_name,
-                       branches.address AS branch_address,
                        branches.manager_phone,
+                       branches.electricity_price,
+                       branches.water_price,
+                       branches.service_price,
+                       branches.parking_price,
                        branches.system_id,
                        branches.ward_id,
                        branches.id AS branch_id,
@@ -587,6 +635,76 @@ class RoomController
         $this->executeRoomStatement($statement, $params);
 
         return $statement->fetchAll();
+    }
+
+    private function fetchBranchCards(array $filters, int $limit, int $offset): array
+    {
+        $sql = "SELECT branches.id AS branch_id,
+                       branches.name AS branch_name,
+                       branches.manager_phone,
+                       branches.electricity_price,
+                       branches.water_price,
+                       branches.service_price,
+                       branches.parking_price,
+                       systems.name AS system_name,
+                       wards.name AS ward_name,
+                       districts.name AS district_name,
+                       COUNT(DISTINCT rooms.id) AS total_rooms,
+                       SUM(CASE WHEN rooms.status = 'chua_lock' THEN 1 ELSE 0 END) AS available_rooms,
+                       SUM(CASE WHEN rooms.status = 'dang_giu' THEN 1 ELSE 0 END) AS held_rooms,
+                       SUM(CASE WHEN rooms.status = 'da_lock' THEN 1 ELSE 0 END) AS locked_rooms,
+                       MIN(NULLIF(rooms.price, 0)) AS min_price,
+                       MAX(NULLIF(rooms.price, 0)) AS max_price,
+                       MAX(rooms.is_public_visible = 1) AS verified_badge,
+                       (
+                           SELECT room_media.file_path
+                           FROM rooms AS cover_rooms
+                           INNER JOIN room_media ON room_media.room_id = cover_rooms.id
+                           WHERE cover_rooms.branch_id = branches.id
+                             AND room_media.media_type = 'image'
+                           ORDER BY (cover_rooms.status = 'chua_lock') DESC, cover_rooms.updated_at DESC, room_media.created_at DESC
+                           LIMIT 1
+                       ) AS cover_image_path
+                FROM rooms
+                INNER JOIN branches ON branches.id = rooms.branch_id
+                INNER JOIN systems ON systems.id = branches.system_id
+                LEFT JOIN wards ON wards.id = branches.ward_id
+                INNER JOIN districts ON districts.id = branches.district_id
+                WHERE 1 = 1";
+
+        $params = [];
+        $this->appendRoomFilters($sql, $params, $filters);
+        $sql .= ' GROUP BY branches.id
+                  ORDER BY available_rooms DESC, branches.updated_at DESC
+                  LIMIT :limit OFFSET :offset';
+        $params['limit'] = max(1, $limit);
+        $params['offset'] = max(0, $offset);
+
+        $statement = Database::connection()->prepare($sql);
+        $this->executeRoomStatement($statement, $params);
+
+        return $statement->fetchAll();
+    }
+
+    private function countBranchCards(array $filters): int
+    {
+        $sql = "SELECT COUNT(*) FROM (
+                    SELECT branches.id
+                    FROM rooms
+                    INNER JOIN branches ON branches.id = rooms.branch_id
+                    INNER JOIN systems ON systems.id = branches.system_id
+                    LEFT JOIN wards ON wards.id = branches.ward_id
+                    INNER JOIN districts ON districts.id = branches.district_id
+                    WHERE 1 = 1";
+
+        $params = [];
+        $this->appendRoomFilters($sql, $params, $filters);
+        $sql .= ' GROUP BY branches.id) AS filtered_branches';
+
+        $statement = Database::connection()->prepare($sql);
+        $this->executeRoomStatement($statement, $params);
+
+        return (int) $statement->fetchColumn();
     }
 
     private function countRooms(array $filters): int
@@ -679,7 +797,7 @@ class RoomController
             $params['price_max'] = (float) $filters['price_max'];
         }
         if ($filters['keyword'] !== '') {
-            $sql .= ' AND (rooms.room_number LIKE :keyword OR branches.name LIKE :keyword OR branches.address LIKE :keyword OR rooms.note LIKE :keyword)';
+            $sql .= ' AND (rooms.room_number LIKE :keyword OR branches.name LIKE :keyword OR rooms.note LIKE :keyword)';
             $params['keyword'] = '%' . $filters['keyword'] . '%';
         }
     }
@@ -702,8 +820,11 @@ class RoomController
         $statement = Database::connection()->prepare(
             "SELECT rooms.*,
                     branches.name AS branch_name,
-                    branches.address AS branch_address,
                     branches.manager_phone,
+                    branches.electricity_price,
+                    branches.water_price,
+                    branches.service_price,
+                    branches.parking_price,
                     branches.system_id,
                     branches.ward_id,
                     branches.id AS branch_id,
@@ -732,16 +853,31 @@ class RoomController
         return $statement->fetchAll();
     }
 
+    private function findBranch(int $branchId): ?array
+    {
+        $statement = Database::connection()->prepare(
+            "SELECT branches.*,
+                    systems.name AS system_name,
+                    wards.name AS ward_name,
+                    districts.name AS district_name
+             FROM branches
+             INNER JOIN systems ON systems.id = branches.system_id
+             LEFT JOIN wards ON wards.id = branches.ward_id
+             INNER JOIN districts ON districts.id = branches.district_id
+             WHERE branches.id = :id
+             LIMIT 1"
+        );
+        $statement->execute(['id' => $branchId]);
+
+        return $statement->fetch() ?: null;
+    }
+
     private function validatedPayload(?array $existingRoom = null): ?array
     {
         $branchId = (int) ($_POST['branch_id'] ?? 0);
         $roomNumber = trim($_POST['room_number'] ?? '');
         $price = trim($_POST['price'] ?? '');
         $roomType = trim($_POST['room_type'] ?? '');
-        $electricityFee = trim($_POST['electricity_fee'] ?? '0');
-        $waterFee = trim($_POST['water_fee'] ?? '0');
-        $serviceFee = trim($_POST['service_fee'] ?? '0');
-        $parkingFee = trim($_POST['parking_fee'] ?? '0');
         $status = trim($_POST['status'] ?? 'chua_lock');
         $isPublicVisible = Auth::can(['director']) && isset($_POST['is_public_visible']) ? 1 : 0;
         $furnitureStatus = trim($_POST['furniture_status'] ?? '');
@@ -749,7 +885,7 @@ class RoomController
         $windowType = trim($_POST['window_type'] ?? '');
         $note = trim($_POST['note'] ?? '');
 
-        $allowedRoomTypes = ['duplet', 'studio', 'one_bedroom', 'two_bedroom', 'kiot'];
+        $allowedRoomTypes = ['duplex', 'studio', 'one_bedroom', 'two_bedroom', 'kiot'];
         $allowedStatuses = ['chua_lock', 'dang_giu', 'da_lock'];
         $allowedFurnitureStatuses = ['co_noi_that', 'khong_noi_that'];
         $allowedWindowTypes = ['cua_so_troi', 'cua_so_hanh_lang', 'cua_so_gieng_troi'];
@@ -767,13 +903,6 @@ class RoomController
             return null;
         }
 
-        foreach ([$electricityFee, $waterFee, $serviceFee, $parkingFee] as $amount) {
-            if (! is_numeric($amount)) {
-                Session::flash('error', 'Tiền điện, nước, dịch vụ và gửi xe phải là số hợp lệ.');
-                return null;
-            }
-        }
-
         if (! $this->validateUploadedFiles()) {
             return null;
         }
@@ -783,10 +912,6 @@ class RoomController
             'room_number' => $roomNumber,
             'price' => (float) $price,
             'room_type' => $roomType,
-            'electricity_fee' => (float) $electricityFee,
-            'water_fee' => (float) $waterFee,
-            'service_fee' => (float) $serviceFee,
-            'parking_fee' => (float) $parkingFee,
             'status' => $status,
             'is_public_visible' => Auth::can(['director'])
                 ? $isPublicVisible
@@ -969,8 +1094,11 @@ class RoomController
         $statement = Database::connection()->prepare(
             "SELECT rooms.*,
                     branches.name AS branch_name,
-                    branches.address AS branch_address,
                     branches.manager_phone,
+                    branches.electricity_price,
+                    branches.water_price,
+                    branches.service_price,
+                    branches.parking_price,
                     branches.system_id,
                     branches.ward_id,
                     branches.id AS branch_id,
@@ -1039,10 +1167,10 @@ class RoomController
             'room_number' => $room['room_number'],
             'price' => (float) $room['price'],
             'room_type' => $room['room_type'],
-            'electricity_fee' => (float) $room['electricity_fee'],
-            'water_fee' => (float) $room['water_fee'],
-            'service_fee' => (float) $room['service_fee'],
-            'parking_fee' => (float) $room['parking_fee'],
+            'electricity_price' => (float) ($room['electricity_price'] ?? 0),
+            'water_price' => (float) ($room['water_price'] ?? 0),
+            'service_price' => (float) ($room['service_price'] ?? 0),
+            'parking_price' => (float) ($room['parking_price'] ?? 0),
             'status' => $room['status'],
             'is_public_visible' => (int) ($room['is_public_visible'] ?? 0),
             'furniture_status' => $room['furniture_status'],
@@ -1050,7 +1178,6 @@ class RoomController
             'window_type' => $room['window_type'],
             'note' => $room['note'] ?? '',
             'branch_name' => $room['branch_name'] ?? '',
-            'branch_address' => $room['branch_address'] ?? '',
             'system_name' => $room['system_name'] ?? '',
             'ward_name' => $room['ward_name'] ?? '',
             'district_name' => $room['district_name'] ?? '',
@@ -1066,7 +1193,7 @@ class RoomController
         return $requestedWith === 'xmlhttprequest' || str_contains($accept, 'application/json');
     }
 
-    private function jsonResponse(array $payload, int $statusCode = 200): never
+    private function jsonResponse(array $payload, int $statusCode = 200): void
     {
         http_response_code($statusCode);
         header('Content-Type: application/json; charset=UTF-8');

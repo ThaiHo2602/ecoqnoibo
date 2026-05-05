@@ -1,9 +1,9 @@
 <?php
 $roomTypeLabels = [
-    'duplet' => 'Duplet',
+    'duplex' => 'Duplex',
     'studio' => 'Studio',
-    'one_bedroom' => '1 phòng ngủ',
-    'two_bedroom' => '2 phòng ngủ',
+    'one_bedroom' => 'Studio',
+    'two_bedroom' => 'Studio',
     'kiot' => 'Kiot',
 ];
 $statusLabels = [
@@ -264,28 +264,6 @@ $lockRequestLabels = [
                     </div>
                 </div>
 
-                <div class="grid-2">
-                    <div>
-                        <label class="form-label">Tiền điện</label>
-                        <input type="number" name="electricity_fee" class="form-control" value="<?= e((string) ($editRoom['electricity_fee'] ?? '0')) ?>" min="0" step="500">
-                    </div>
-                    <div>
-                        <label class="form-label">Tiền nước</label>
-                        <input type="number" name="water_fee" class="form-control" value="<?= e((string) ($editRoom['water_fee'] ?? '0')) ?>" min="0" step="1000">
-                    </div>
-                </div>
-
-                <div class="grid-2">
-                    <div>
-                        <label class="form-label">Phí dịch vụ</label>
-                        <input type="number" name="service_fee" class="form-control" value="<?= e((string) ($editRoom['service_fee'] ?? '0')) ?>" min="0" step="1000">
-                    </div>
-                    <div>
-                        <label class="form-label">Phí gửi xe</label>
-                        <input type="number" name="parking_fee" class="form-control" value="<?= e((string) ($editRoom['parking_fee'] ?? '0')) ?>" min="0" step="1000">
-                    </div>
-                </div>
-
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" value="1" id="hasBalcony" name="has_balcony" <?= (int) ($editRoom['has_balcony'] ?? 0) === 1 ? 'checked' : '' ?>>
                     <label class="form-check-label" for="hasBalcony">Có ban công</label>
@@ -533,10 +511,10 @@ $lockRequestLabels = [
                                     <div><span>Hệ thống</span><strong><?= e($room['system_name']) ?></strong></div>
                                     <div><span>Chi nhánh</span><strong><?= e($room['branch_name']) ?></strong></div>
                                     <div><span>Quận</span><strong><?= e($room['district_name']) ?></strong></div>
-                                    <div><span>Tiền điện</span><strong><?= e(number_format((float) $room['electricity_fee'], 0, ',', '.')) ?></strong></div>
-                                    <div><span>Tiền nước</span><strong><?= e(number_format((float) $room['water_fee'], 0, ',', '.')) ?></strong></div>
-                                    <div><span>Phí dịch vụ</span><strong><?= e(number_format((float) $room['service_fee'], 0, ',', '.')) ?></strong></div>
-                                    <div><span>Phí gửi xe</span><strong><?= e(number_format((float) $room['parking_fee'], 0, ',', '.')) ?></strong></div>
+                                    <div><span>Tiền điện</span><strong><?= e(number_format((float) ($room['electricity_price'] ?? 0), 0, ',', '.')) ?></strong></div>
+                                    <div><span>Tiền nước</span><strong><?= e(number_format((float) ($room['water_price'] ?? 0), 0, ',', '.')) ?></strong></div>
+                                    <div><span>Phí dịch vụ</span><strong><?= e(number_format((float) ($room['service_price'] ?? 0), 0, ',', '.')) ?></strong></div>
+                                    <div><span>Phí gửi xe</span><strong><?= e(number_format((float) ($room['parking_price'] ?? 0), 0, ',', '.')) ?></strong></div>
                                 </div>
 
                                 <div class="detail-note mt-3">
@@ -754,6 +732,7 @@ $lockRequestLabels = [
                     + detailButton
                     + '<button type="button" class="btn btn-sm btn-outline-primary" data-room-edit-button data-room-id="' + escapeHtml(room.id) + '">Sửa</button>'
                     + '<form method="POST" action="<?= e(url('/rooms/delete')) ?>" data-room-delete-form>'
+                    + '<input type="hidden" name="_csrf_token" value="' + escapeHtml(window.appCsrfToken || '') + '">'
                     + '<input type="hidden" name="id" value="' + escapeHtml(room.id) + '">'
                     + '<button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>'
                     + '</form>'
@@ -776,11 +755,15 @@ $lockRequestLabels = [
                         }
 
                         const formData = new FormData(form);
+                        if (window.appCsrfToken && !formData.has('_csrf_token')) {
+                            formData.append('_csrf_token', window.appCsrfToken);
+                        }
                         fetch(form.action, {
                             method: 'POST',
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest',
-                                'Accept': 'application/json'
+                                'Accept': 'application/json',
+                                'X-CSRF-Token': window.appCsrfToken || ''
                             },
                             body: formData
                         })
@@ -844,10 +827,6 @@ $lockRequestLabels = [
                                 roomForm.querySelector('[name="status"]').value = room.status;
                                 roomForm.querySelector('[name="furniture_status"]').value = room.furniture_status;
                                 roomForm.querySelector('[name="window_type"]').value = room.window_type;
-                                roomForm.querySelector('[name="electricity_fee"]').value = room.electricity_fee;
-                                roomForm.querySelector('[name="water_fee"]').value = room.water_fee;
-                                roomForm.querySelector('[name="service_fee"]').value = room.service_fee;
-                                roomForm.querySelector('[name="parking_fee"]').value = room.parking_fee;
                                 roomForm.querySelector('[name="note"]').value = room.note || '';
                                 roomForm.querySelector('[name="has_balcony"]').checked = Number(room.has_balcony) === 1;
 
@@ -871,11 +850,15 @@ $lockRequestLabels = [
                 clearMessage();
 
                 const formData = new FormData(roomForm);
+                if (window.appCsrfToken && !formData.has('_csrf_token')) {
+                    formData.append('_csrf_token', window.appCsrfToken);
+                }
                 fetch(roomForm.action, {
                     method: 'POST',
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
+                        'Accept': 'application/json',
+                        'X-CSRF-Token': window.appCsrfToken || ''
                     },
                     body: formData
                 })

@@ -52,7 +52,7 @@ class BranchController
             $params['district_id'] = $filters['district_id'];
         }
         if ($filters['keyword'] !== '') {
-            $sql .= ' AND (branches.name LIKE :keyword OR branches.address LIKE :keyword OR branches.manager_phone LIKE :keyword)';
+            $sql .= ' AND (branches.name LIKE :keyword OR branches.manager_phone LIKE :keyword)';
             $params['keyword'] = '%' . $filters['keyword'] . '%';
         }
 
@@ -104,28 +104,32 @@ class BranchController
         $wardId = (int) ($_POST['ward_id'] ?? 0);
         $districtId = (int) ($_POST['district_id'] ?? 0);
         $name = trim($_POST['name'] ?? '');
-        $address = trim($_POST['address'] ?? '');
         $managerPhone = trim($_POST['manager_phone'] ?? '');
         $systemId = (int) ($_POST['system_id'] ?? 0);
+        $fees = $this->feePayload();
         $ward = $this->findWard($wardId);
 
-        if ($systemId <= 0 || ! $ward || $wardId <= 0 || $districtId <= 0 || $name === '' || $address === '') {
+        if ($systemId <= 0 || ! $ward || $wardId <= 0 || $districtId <= 0 || $name === '') {
             Session::flash('error', 'Vui lòng nhập đầy đủ thông tin chi nhánh.');
+            redirect($this->redirectTarget());
+        }
+
+        if ($this->branchNameExistsInSystem($systemId, $name)) {
+            Session::flash('error', 'Tên chi nhánh này đã tồn tại trong hệ thống đã chọn.');
             redirect($this->redirectTarget());
         }
 
         try {
             Database::connection()->prepare(
-                'INSERT INTO branches (system_id, ward_id, district_id, name, address, manager_phone)
-                 VALUES (:system_id, :ward_id, :district_id, :name, :address, :manager_phone)'
+                'INSERT INTO branches (system_id, ward_id, district_id, name, manager_phone, electricity_price, water_price, parking_price, service_price)
+                 VALUES (:system_id, :ward_id, :district_id, :name, :manager_phone, :electricity_price, :water_price, :parking_price, :service_price)'
             )->execute([
                 'system_id' => $systemId,
                 'ward_id' => $wardId,
                 'district_id' => $districtId,
                 'name' => $name,
-                'address' => $address,
                 'manager_phone' => $managerPhone !== '' ? $managerPhone : null,
-            ]);
+            ] + $fees);
         } catch (\PDOException) {
             Session::flash('error', 'Thêm chi nhánh thất bại. Tên chi nhánh có thể đã bị trùng trong hệ thống.');
             redirect($this->redirectTarget());
@@ -146,20 +150,33 @@ class BranchController
         $wardId = (int) ($_POST['ward_id'] ?? 0);
         $districtId = (int) ($_POST['district_id'] ?? 0);
         $name = trim($_POST['name'] ?? '');
-        $address = trim($_POST['address'] ?? '');
         $managerPhone = trim($_POST['manager_phone'] ?? '');
         $systemId = (int) ($_POST['system_id'] ?? 0);
+        $fees = $this->feePayload();
         $ward = $this->findWard($wardId);
 
-        if ($id <= 0 || $systemId <= 0 || ! $ward || $wardId <= 0 || $districtId <= 0 || $name === '' || $address === '') {
+        if ($id <= 0 || $systemId <= 0 || ! $ward || $wardId <= 0 || $districtId <= 0 || $name === '') {
             Session::flash('error', 'Thông tin cập nhật chi nhánh không hợp lệ.');
+            redirect($this->redirectTarget());
+        }
+
+        if ($this->branchNameExistsInSystem($systemId, $name, $id)) {
+            Session::flash('error', 'Tên chi nhánh này đã tồn tại trong hệ thống đã chọn.');
             redirect($this->redirectTarget());
         }
 
         try {
             Database::connection()->prepare(
                 'UPDATE branches
-                 SET system_id = :system_id, ward_id = :ward_id, district_id = :district_id, name = :name, address = :address, manager_phone = :manager_phone
+                 SET system_id = :system_id,
+                     ward_id = :ward_id,
+                     district_id = :district_id,
+                     name = :name,
+                     manager_phone = :manager_phone,
+                     electricity_price = :electricity_price,
+                     water_price = :water_price,
+                     parking_price = :parking_price,
+                     service_price = :service_price
                  WHERE id = :id'
             )->execute([
                 'id' => $id,
@@ -167,9 +184,8 @@ class BranchController
                 'ward_id' => $wardId,
                 'district_id' => $districtId,
                 'name' => $name,
-                'address' => $address,
                 'manager_phone' => $managerPhone !== '' ? $managerPhone : null,
-            ]);
+            ] + $fees);
         } catch (\PDOException) {
             Session::flash('error', 'Cập nhật chi nhánh thất bại. Vui lòng kiểm tra dữ liệu bị trùng.');
             redirect($this->redirectTarget());
@@ -263,6 +279,35 @@ class BranchController
         $statement->execute(['id' => $wardId]);
 
         return $statement->fetch() ?: null;
+    }
+
+    private function branchNameExistsInSystem(int $systemId, string $name, int $ignoreBranchId = 0): bool
+    {
+        $statement = Database::connection()->prepare(
+            'SELECT id
+             FROM branches
+             WHERE system_id = :system_id
+               AND name = :name
+               AND (:ignore_branch_id = 0 OR id <> :ignore_branch_id)
+             LIMIT 1'
+        );
+        $statement->execute([
+            'system_id' => $systemId,
+            'name' => $name,
+            'ignore_branch_id' => $ignoreBranchId,
+        ]);
+
+        return (bool) $statement->fetch();
+    }
+
+    private function feePayload(): array
+    {
+        return [
+            'electricity_price' => max(0, (float) ($_POST['electricity_price'] ?? 0)),
+            'water_price' => max(0, (float) ($_POST['water_price'] ?? 0)),
+            'parking_price' => max(0, (float) ($_POST['parking_price'] ?? 0)),
+            'service_price' => max(0, (float) ($_POST['service_price'] ?? 0)),
+        ];
     }
 
     private function redirectTarget(): string

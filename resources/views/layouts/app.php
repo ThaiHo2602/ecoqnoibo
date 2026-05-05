@@ -22,6 +22,56 @@ $isManagerOrDirector = in_array($roleName, ['manager', 'director'], true);
 $isDirector = $roleName === 'director';
 $isManager = $roleName === 'manager';
 $isCollaborator = $roleName === 'collaborator';
+$appMenuItems = [];
+
+$addMenuItem = static function (
+    bool $allowed,
+    string $key,
+    string $label,
+    string $path,
+    string $match,
+    string $icon,
+    int $mobilePriority
+) use (&$appMenuItems): void {
+    if (! $allowed) {
+        return;
+    }
+
+    $appMenuItems[] = [
+        'key' => $key,
+        'label' => $label,
+        'path' => $path,
+        'match' => $match,
+        'icon' => $icon,
+        'mobile_priority' => $mobilePriority,
+        'active' => str_ends_with($match, '*')
+            ? is_path_prefix(rtrim($match, '*'))
+            : is_current_path($match),
+    ];
+};
+
+$addMenuItem((bool) $currentUser, 'home', 'Trang chu', '/app', '/app', '⌂', 10);
+$addMenuItem((bool) $currentUser && $isManagerOrDirector, 'dashboard', 'Bang dieu khien', '/dashboard', '/dashboard', '▦', 20);
+$addMenuItem((bool) $currentUser && $isManagerOrDirector, 'systems', 'He thong', '/systems', '/systems', '⚙', 80);
+$addMenuItem((bool) $currentUser && $isManagerOrDirector, 'wards', 'Phuong', '/wards', '/wards', '⌖', 70);
+$addMenuItem((bool) $currentUser && $isManagerOrDirector, 'branches', 'Chi nhanh', '/branches', '/branches', '▥', 30);
+$addMenuItem((bool) $currentUser && ! $isManager, 'customers', 'Khach hang', '/customers', '/customers', '◉', 40);
+$addMenuItem((bool) $currentUser && ! $isCollaborator, 'rooms', 'Phong', '/rooms', '/rooms*', '▤', 15);
+$addMenuItem((bool) $currentUser && ! $isCollaborator, 'locks', $isManagerOrDirector ? 'Duyet lock' : 'Yeu cau lock', '/lock-requests', '/lock-requests', '⌁', 35);
+$addMenuItem((bool) $currentUser && $isManagerOrDirector, 'reports', 'Bao cao', '/reports', '/reports', '◫', 60);
+$addMenuItem((bool) $currentUser && $isDirector, 'users', 'Nguoi dung', '/users', '/users', '☷', 90);
+$addMenuItem((bool) $currentUser && $isDirector, 'activity', 'Nhat ky', '/activity-logs', '/activity-logs', '☰', 100);
+$addMenuItem((bool) $currentUser, 'password', 'Doi mat khau', '/profile/password', '/profile/password', '⚿', 110);
+
+$mobileMenuItems = $appMenuItems;
+usort($mobileMenuItems, static fn (array $a, array $b): int => $a['mobile_priority'] <=> $b['mobile_priority']);
+$mobilePrimaryItems = array_slice($mobileMenuItems, 0, 4);
+$mobilePrimaryKeys = array_column($mobilePrimaryItems, 'key');
+$mobileMoreItems = array_values(array_filter(
+    $appMenuItems,
+    static fn (array $item): bool => ! in_array($item['key'], $mobilePrimaryKeys, true)
+));
+$mobileNavCount = count($mobilePrimaryItems) + ($currentUser ? 1 : 0);
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -37,6 +87,7 @@ $isCollaborator = $roleName === 'collaborator';
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="<?= e($bootstrapCssUrl) ?>" rel="stylesheet" onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.href='<?= e($bootstrapCssFallbackUrl) ?>';}">
     <link href="<?= e($appCssUrl) ?>" rel="stylesheet" onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.href='<?= e($appCssFallbackUrl) ?>';}">
+    <meta name="csrf-token" content="<?= e(csrf_token()) ?>">
     <style>
         body.app-body {
             margin: 0;
@@ -282,6 +333,12 @@ $isCollaborator = $roleName === 'collaborator';
                 <div class="small text-white-50">Đang đăng nhập với</div>
                 <div class="fw-semibold"><?= e($currentUser['full_name'] ?? '') ?></div>
                 <div class="text-white-50 small"><?= e($currentUser['role_display_name'] ?? '') ?></div>
+                <?php if ($currentUser): ?>
+                    <form method="POST" action="<?= e(url('/logout')) ?>" class="mt-3">
+                        <?= csrf_field() ?>
+                        <button type="submit" class="btn btn-light w-100 fw-bold">Dang xuat</button>
+                    </form>
+                <?php endif; ?>
             </div>
         </aside>
 
@@ -329,6 +386,7 @@ $isCollaborator = $roleName === 'collaborator';
                     </div>
 
                     <form method="POST" action="<?= e(url('/logout')) ?>">
+                        <?= csrf_field() ?>
                         <button type="submit" class="btn btn-outline-danger">Đăng xuất</button>
                     </form>
                 </div>
@@ -360,6 +418,33 @@ $isCollaborator = $roleName === 'collaborator';
         document.addEventListener('DOMContentLoaded', function () {
             const body = document.body;
             const appOrigin = window.location.origin;
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            window.appCsrfToken = csrfToken;
+
+            const ensureCsrfToken = function (form) {
+                if (!form || !csrfToken) {
+                    return;
+                }
+
+                const method = (form.getAttribute('method') || 'GET').toUpperCase();
+                if (method !== 'POST') {
+                    return;
+                }
+
+                let input = form.querySelector('input[name="_csrf_token"]');
+                if (!input) {
+                    input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = '_csrf_token';
+                    form.prepend(input);
+                }
+
+                input.value = csrfToken;
+            };
+
+            const hydrateCsrfTokens = function (root) {
+                (root || document).querySelectorAll('form').forEach(ensureCsrfToken);
+            };
 
             const closeSidebar = function () {
                 body.classList.remove('sidebar-open');
@@ -612,14 +697,15 @@ $isCollaborator = $roleName === 'collaborator';
                 try {
                     setLoading(true);
 
-                    const fetchOptions = {
-                        method: method,
-                        credentials: 'same-origin',
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'X-App-Pjax': '1',
-                        },
-                    };
+                const fetchOptions = {
+                    method: method,
+                    credentials: 'same-origin',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-App-Pjax': '1',
+                        'X-CSRF-Token': csrfToken,
+                    },
+                };
 
                     let requestUrl = url;
 
@@ -701,6 +787,7 @@ $isCollaborator = $roleName === 'collaborator';
 
             document.addEventListener('submit', function (event) {
                 const form = event.target;
+                ensureCsrfToken(form);
 
                 if (!shouldHandleForm(form, event)) {
                     return;
@@ -734,6 +821,7 @@ $isCollaborator = $roleName === 'collaborator';
             });
 
             hydrateToasts();
+            hydrateCsrfTokens(document);
 
             loadDesktopSidebarState();
 

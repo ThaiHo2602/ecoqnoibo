@@ -1,6 +1,24 @@
 <?php
 
-if (session_status() === PHP_SESSION_NONE) {
+if (session_status() === PHP_SESSION_NONE && ! headers_sent()) {
+    $sessionPath = (string) ini_get('session.save_path');
+    if (str_contains($sessionPath, ';')) {
+        $sessionPathParts = explode(';', $sessionPath);
+        $sessionPath = (string) end($sessionPathParts);
+    }
+
+    if ($sessionPath === '' || ! is_dir($sessionPath) || ! is_writable($sessionPath)) {
+        $fallbackSessionPath = dirname(__DIR__, 3) . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR . 'sessions';
+
+        if (! is_dir($fallbackSessionPath)) {
+            @mkdir($fallbackSessionPath, 0775, true);
+        }
+
+        if (is_dir($fallbackSessionPath) && is_writable($fallbackSessionPath)) {
+            ini_set('session.save_path', $fallbackSessionPath);
+        }
+    }
+
     session_start();
 }
 

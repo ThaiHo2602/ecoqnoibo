@@ -31,6 +31,7 @@ $contactError = \App\Core\Session::getFlash('contact_error');
             </div>
             <div class="col-lg-7">
                 <form class="contact-form reveal-up" action="<?php echo htmlspecialchars(base_url('lien-he')); ?>" method="post">
+                    <?php echo function_exists('csrf_field') ? csrf_field() : ''; ?>
                     <?php if ($contactSuccess): ?>
                         <div class="alert alert-success"><?php echo htmlspecialchars($contactSuccess); ?></div>
                     <?php endif; ?>

@@ -71,15 +71,18 @@ CREATE TABLE branches (
   ward_id INT UNSIGNED NOT NULL,
   district_id INT UNSIGNED NOT NULL,
   name VARCHAR(150) NOT NULL,
-  address VARCHAR(255) NOT NULL,
   manager_phone VARCHAR(20) NULL,
+  electricity_price DECIMAL(10, 2) NOT NULL DEFAULT 0,
+  water_price DECIMAL(10, 2) NOT NULL DEFAULT 0,
+  parking_price DECIMAL(10, 2) NOT NULL DEFAULT 0,
+  service_price DECIMAL(10, 2) NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_branches_system FOREIGN KEY (system_id) REFERENCES systems(id) ON DELETE CASCADE,
   CONSTRAINT fk_branches_ward FOREIGN KEY (ward_id) REFERENCES wards(id),
   CONSTRAINT fk_branches_district FOREIGN KEY (district_id) REFERENCES districts(id),
   KEY idx_branches_system (system_id),
-  UNIQUE KEY uq_branch_per_ward (ward_id, name)
+  UNIQUE KEY uq_branch_per_system (system_id, name)
 ) ENGINE=InnoDB;
 
 CREATE TABLE rooms (
@@ -87,7 +90,7 @@ CREATE TABLE rooms (
   branch_id INT UNSIGNED NOT NULL,
   room_number VARCHAR(50) NOT NULL,
   price DECIMAL(12, 2) NOT NULL DEFAULT 0,
-  room_type ENUM('duplet', 'studio', 'one_bedroom', 'two_bedroom', 'kiot') NOT NULL,
+  room_type ENUM('duplex', 'studio', 'one_bedroom', 'two_bedroom', 'kiot') NOT NULL,
   electricity_fee DECIMAL(10, 2) NOT NULL DEFAULT 0,
   water_fee DECIMAL(10, 2) NOT NULL DEFAULT 0,
   service_fee DECIMAL(10, 2) NOT NULL DEFAULT 0,
@@ -194,10 +197,10 @@ INSERT INTO wards (name, description) VALUES
 ('Phuong 25', 'Khu vuc Binh Thanh'),
 ('Phuong 13', 'Khu vuc Tan Binh');
 
-INSERT INTO branches (system_id, ward_id, district_id, name, address, manager_phone) VALUES
-((SELECT id FROM systems WHERE name = 'Long Thinh'), (SELECT id FROM wards WHERE name = 'Phuong Tan Phong'), (SELECT id FROM districts WHERE name = 'Quan 7'), 'Long Thinh 1', '123 Nguyen Thi Thap, Quan 7', '0911111111'),
-((SELECT id FROM systems WHERE name = 'Long Thinh'), (SELECT id FROM wards WHERE name = 'Phuong 25'), (SELECT id FROM districts WHERE name = 'Quan Binh Thanh'), 'Long Thinh 2', '45 Xo Viet Nghe Tinh, Binh Thanh', '0922222222'),
-((SELECT id FROM systems WHERE name = 'An Phu'), (SELECT id FROM wards WHERE name = 'Phuong 13'), (SELECT id FROM districts WHERE name = 'Quan Tan Binh'), 'An Phu 1', '88 Cong Hoa, Tan Binh', '0933333333');
+INSERT INTO branches (system_id, ward_id, district_id, name, manager_phone) VALUES
+((SELECT id FROM systems WHERE name = 'Long Thinh'), (SELECT id FROM wards WHERE name = 'Phuong Tan Phong'), (SELECT id FROM districts WHERE name = 'Quan 7'), 'Long Thinh 1', '0911111111'),
+((SELECT id FROM systems WHERE name = 'Long Thinh'), (SELECT id FROM wards WHERE name = 'Phuong 25'), (SELECT id FROM districts WHERE name = 'Quan Binh Thanh'), 'Long Thinh 2', '0922222222'),
+((SELECT id FROM systems WHERE name = 'An Phu'), (SELECT id FROM wards WHERE name = 'Phuong 13'), (SELECT id FROM districts WHERE name = 'Quan Tan Binh'), 'An Phu 1', '0933333333');
 
 INSERT INTO rooms (
   branch_id,
@@ -215,7 +218,7 @@ INSERT INTO rooms (
   window_type,
   note
 ) VALUES
-((SELECT id FROM branches WHERE name = 'Long Thinh 1'), 'P101', 3500000, 'duplet', 3500, 120000, 150000, 100000, 'chua_lock', 1, 'co_noi_that', 1, 'cua_so_troi', 'Phong gan cau thang, phu hop 1-2 nguoi.'),
+((SELECT id FROM branches WHERE name = 'Long Thinh 1'), 'P101', 3500000, 'duplex', 3500, 120000, 150000, 100000, 'chua_lock', 1, 'co_noi_that', 1, 'cua_so_troi', 'Phong gan cau thang, phu hop 1-2 nguoi.'),
 ((SELECT id FROM branches WHERE name = 'Long Thinh 1'), 'P102', 2800000, 'studio', 3500, 100000, 150000, 100000, 'dang_giu', 0, 'khong_noi_that', 0, 'cua_so_hanh_lang', 'Dang co khach giu cho den het ngay.'),
 ((SELECT id FROM branches WHERE name = 'An Phu 1'), 'A201', 4200000, 'one_bedroom', 4000, 150000, 200000, 120000, 'da_lock', 0, 'co_noi_that', 1, 'cua_so_gieng_troi', 'Da lock thanh cong cho khach moi.');
 

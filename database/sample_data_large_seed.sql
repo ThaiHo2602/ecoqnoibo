@@ -10,8 +10,8 @@ INSERT IGNORE INTO districts (name) VALUES
 ('Quận 7'),
 ('Quận 10'),
 ('Quận 11'),
-('Quận Bình Thạnh'),
-('Quận Tân Bình'),
+('Quận Binh Thạnh'),
+('Quận Ten Binh'),
 ('Thủ Đức');
 
 INSERT IGNORE INTO systems (name, description, is_active) VALUES
@@ -34,8 +34,8 @@ INSERT IGNORE INTO wards (name, description) VALUES
 INSERT IGNORE INTO users (role_id, full_name, job_title, phone, email, username, password, account_status, last_login_at)
 SELECT
     (SELECT id FROM roles WHERE name = 'staff'),
-    'Nhân viên mẫu 01',
-    'Nhân viên kinh doanh',
+    'Nhan vien mẫu 01',
+    'Nhan vien kinh doanh',
     '0901000001',
     'staff01@ecoq.local',
     'staff01',
@@ -47,8 +47,8 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'staff01');
 INSERT IGNORE INTO users (role_id, full_name, job_title, phone, email, username, password, account_status, last_login_at)
 SELECT
     (SELECT id FROM roles WHERE name = 'staff'),
-    'Nhân viên mẫu 02',
-    'Nhân viên kinh doanh',
+    'Nhan vien mẫu 02',
+    'Nhan vien kinh doanh',
     '0901000002',
     'staff02@ecoq.local',
     'staff02',
@@ -60,8 +60,8 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'staff02');
 INSERT IGNORE INTO users (role_id, full_name, job_title, phone, email, username, password, account_status, last_login_at)
 SELECT
     (SELECT id FROM roles WHERE name = 'staff'),
-    'Nhân viên mẫu 03',
-    'Nhân viên kinh doanh',
+    'Nhan vien mẫu 03',
+    'Nhan vien kinh doanh',
     '0901000003',
     'staff03@ecoq.local',
     'staff03',
@@ -73,8 +73,8 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'staff03');
 INSERT IGNORE INTO users (role_id, full_name, job_title, phone, email, username, password, account_status, last_login_at)
 SELECT
     (SELECT id FROM roles WHERE name = 'staff'),
-    'Nhân viên mẫu 04',
-    'Nhân viên kinh doanh',
+    'Nhan vien mẫu 04',
+    'Nhan vien kinh doanh',
     '0901000004',
     'staff04@ecoq.local',
     'staff04',
@@ -86,8 +86,8 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'staff04');
 INSERT IGNORE INTO users (role_id, full_name, job_title, phone, email, username, password, account_status, last_login_at)
 SELECT
     (SELECT id FROM roles WHERE name = 'staff'),
-    'Nhân viên mẫu 05',
-    'Nhân viên kinh doanh',
+    'Nhan vien mẫu 05',
+    'Nhan vien kinh doanh',
     '0901000005',
     'staff05@ecoq.local',
     'staff05',
@@ -99,8 +99,8 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'staff05');
 INSERT IGNORE INTO users (role_id, full_name, job_title, phone, email, username, password, account_status, last_login_at)
 SELECT
     (SELECT id FROM roles WHERE name = 'staff'),
-    'Nhân viên mẫu 06',
-    'Nhân viên kinh doanh',
+    'Nhan vien mẫu 06',
+    'Nhan vien kinh doanh',
     '0901000006',
     'staff06@ecoq.local',
     'staff06',
@@ -112,8 +112,8 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'staff06');
 INSERT IGNORE INTO users (role_id, full_name, job_title, phone, email, username, password, account_status, last_login_at)
 SELECT
     (SELECT id FROM roles WHERE name = 'staff'),
-    'Nhân viên mẫu 07',
-    'Nhân viên kinh doanh',
+    'Nhan vien mẫu 07',
+    'Nhan vien kinh doanh',
     '0901000007',
     'staff07@ecoq.local',
     'staff07',
@@ -125,8 +125,8 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'staff07');
 INSERT IGNORE INTO users (role_id, full_name, job_title, phone, email, username, password, account_status, last_login_at)
 SELECT
     (SELECT id FROM roles WHERE name = 'staff'),
-    'Nhân viên mẫu 08',
-    'Nhân viên kinh doanh',
+    'Nhan vien mẫu 08',
+    'Nhan vien kinh doanh',
     '0901000008',
     'staff08@ecoq.local',
     'staff08',
@@ -138,8 +138,8 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'staff08');
 INSERT IGNORE INTO users (role_id, full_name, job_title, phone, email, username, password, account_status, last_login_at)
 SELECT
     (SELECT id FROM roles WHERE name = 'staff'),
-    'Nhân viên mẫu 09',
-    'Nhân viên kinh doanh',
+    'Nhan vien mẫu 09',
+    'Nhan vien kinh doanh',
     '0901000009',
     'staff09@ecoq.local',
     'staff09',
@@ -151,8 +151,8 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'staff09');
 INSERT IGNORE INTO users (role_id, full_name, job_title, phone, email, username, password, account_status, last_login_at)
 SELECT
     (SELECT id FROM roles WHERE name = 'staff'),
-    'Nhân viên mẫu 10',
-    'Nhân viên kinh doanh',
+    'Nhan vien mẫu 10',
+    'Nhan vien kinh doanh',
     '0901000010',
     'staff10@ecoq.local',
     'staff10',
@@ -179,18 +179,17 @@ BEGIN
             WHEN 5 THEN 'Quận 7'
             WHEN 6 THEN 'Quận 10'
             WHEN 7 THEN 'Quận 11'
-            WHEN 8 THEN 'Quận Bình Thạnh'
-            WHEN 9 THEN 'Quận Tân Bình'
+            WHEN 8 THEN 'Quận Binh Thạnh'
+            WHEN 9 THEN 'Quận Ten Binh'
             ELSE 'Thủ Đức'
         END;
 
-        INSERT IGNORE INTO branches (system_id, ward_id, district_id, name, address, manager_phone)
+        INSERT IGNORE INTO branches (system_id, ward_id, district_id, name, manager_phone)
         VALUES (
             (SELECT id FROM systems WHERE name = CONCAT('Hệ thống mẫu ', LPAD(system_idx, 2, '0')) LIMIT 1),
             (SELECT id FROM wards WHERE name = CONCAT('Phuong mau ', LPAD(((idx - 1) MOD 3) + 1, 2, '0')) LIMIT 1),
             (SELECT id FROM districts WHERE name = district_name_value LIMIT 1),
-            CONCAT('Chi nhánh mẫu ', LPAD(idx, 2, '0')),
-            CONCAT(100 + idx, ' Đường nội bộ ', LPAD(idx, 2, '0'), ', ', district_name_value),
+            CONCAT('Chi nhanh mẫu ', LPAD(idx, 2, '0')),
             CONCAT('09', LPAD(idx, 8, '0'))
         );
 
@@ -227,11 +226,11 @@ BEGIN
             window_type,
             note
         ) VALUES (
-            (SELECT id FROM branches WHERE name = CONCAT('Chi nhánh mẫu ', LPAD(branch_idx, 2, '0')) LIMIT 1),
+            (SELECT id FROM branches WHERE name = CONCAT('Chi nhanh mẫu ', LPAD(branch_idx, 2, '0')) LIMIT 1),
             CONCAT('P', LPAD(idx, 3, '0')),
             2500000 + (idx * 55000),
             CASE
-                WHEN MOD(idx, 5) = 0 THEN 'duplet'
+                WHEN MOD(idx, 5) = 0 THEN 'duplex'
                 WHEN MOD(idx, 5) = 1 THEN 'studio'
                 WHEN MOD(idx, 5) = 2 THEN 'one_bedroom'
                 WHEN MOD(idx, 5) = 3 THEN 'two_bedroom'
@@ -254,7 +253,7 @@ BEGIN
                 WHEN 1 THEN 'cua_so_hanh_lang'
                 ELSE 'cua_so_gieng_troi'
             END,
-            CONCAT('Phòng mẫu số ', idx, ', phù hợp cho khách cần dữ liệu demo để test lọc và lock phòng.')
+            CONCAT('Phong mẫu số ', idx, ', phu hop cho khach cần dữ liệu demo để test lọc va lock phong.')
         );
 
         SET idx = idx + 1;

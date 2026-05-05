@@ -140,7 +140,7 @@ function media_url(string $path): string
     return url($normalizedPath);
 }
 
-function redirect(string $path): never
+function redirect(string $path): void
 {
     header('Location: ' . url($path));
     exit;
@@ -195,6 +195,70 @@ function request_method(): string
     return strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
 }
 
+function csrf_token(): string
+{
+    $token = Session::get('_csrf_token');
+
+    if (! is_string($token) || $token === '') {
+        $token = bin2hex(random_bytes(32));
+        Session::put('_csrf_token', $token);
+    }
+
+    return $token;
+}
+
+function csrf_field(): string
+{
+    return '<input type="hidden" name="_csrf_token" value="'
+        . htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8')
+        . '">';
+}
+
+function csrf_verify(): bool
+{
+    if (request_method() !== 'POST') {
+        return true;
+    }
+
+    $sessionToken = Session::get('_csrf_token');
+    if (! is_string($sessionToken) || $sessionToken === '') {
+        return false;
+    }
+
+    $submittedToken = $_POST['_csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+    if (! is_string($submittedToken) || $submittedToken === '') {
+        return false;
+    }
+
+    return hash_equals($sessionToken, $submittedToken);
+}
+
+function is_ajax_request(): bool
+{
+    $requestedWith = strtolower((string) ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? ''));
+    $accept = strtolower((string) ($_SERVER['HTTP_ACCEPT'] ?? ''));
+
+    return $requestedWith === 'xmlhttprequest' || str_contains($accept, 'application/json');
+}
+
+function csrf_reject(): void
+{
+    http_response_code(419);
+
+    if (is_ajax_request()) {
+        header('Content-Type: application/json; charset=UTF-8');
+        echo json_encode([
+            'success' => false,
+            'message' => 'Phiên thao tác đã hết hạn. Vui lòng tải lại trang và thử lại.',
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    Session::flash('error', 'Phiên thao tác đã hết hạn. Vui lòng tải lại trang và thử lại.');
+    Session::flash('contact_error', 'Phiên thao tác đã hết hạn. Vui lòng tải lại trang và thử lại.');
+    redirect(current_path());
+}
+
 function activity_log(?int $userId, string $action, string $module, string $description): void
 {
     try {
@@ -213,7 +277,7 @@ function activity_log(?int $userId, string $action, string $module, string $desc
     }
 }
 
-function abort(int $statusCode, string $message = ''): never
+function abort(int $statusCode, string $message = ''): void
 {
     http_response_code($statusCode);
     $pageTitle = match ($statusCode) {

@@ -50,6 +50,7 @@ $logoUrl = asset('assets/images/logo.png');
             <?php endif; ?>
 
             <form method="POST" action="<?= e(url('/login')) ?>" class="d-grid gap-3">
+                <?= csrf_field() ?>
                 <div>
                     <label for="username" class="form-label">Tài khoản</label>
                     <input

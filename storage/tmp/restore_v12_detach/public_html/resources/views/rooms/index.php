@@ -1,6 +1,6 @@
 <?php
 $roomTypeLabels = [
-    'duplet' => 'Duplet',
+    'duplex' => 'duplex',
     'studio' => 'Studio',
     'one_bedroom' => '1 phòng ngủ',
     'two_bedroom' => '2 phòng ngủ',

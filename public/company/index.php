@@ -1,16 +1,12 @@
 <?php
 require_once __DIR__ . '/data/news-content.php';
 require_once __DIR__ . '/data/jobs.php';
-require_once __DIR__ . '/includes/projects-data.php';
 
 $newsItems = ecoq_news_items();
 
 $pageTitle = 'Trang chủ - Eco-Q House';
 $pageDescription = 'Landing page Eco-Q House - môi giới căn hộ dịch vụ chuyên nghiệp, tin tức hữu ích và cơ hội nghề nghiệp nổi bật.';
 $currentPage = 'home';
-
-$featuredRooms = array_slice(fetch_public_rooms(), 0, 3);
-$featuredMediaMap = fetch_room_media_map(array_map(static fn (array $room): int => (int) $room['id'], $featuredRooms));
 
 require_once __DIR__ . '/includes/header.php';
 ?>
@@ -74,10 +70,21 @@ require_once __DIR__ . '/includes/header.php';
             <a href="<?php echo htmlspecialchars(base_url('du-an.php')); ?>" class="btn btn-outline-brand">Xem trang dự án</a>
         </div>
 
-        <?php if ($featuredRooms !== []): ?>
+        <div class="project-home-prompt reveal-up">
+            <div>
+                <span class="section-kicker">Kho phong Eco-Q House</span>
+                <h3>Danh sach phong dang hien thi duoc cap nhat tai trang du an.</h3>
+                <p>Trang chu duoc giu gon va on dinh, ban co the xem toan bo phong kha dung, hinh anh va thong tin chi tiet o trang du an.</p>
+            </div>
+            <div class="project-home-actions">
+                <a href="<?php echo htmlspecialchars(base_url('du-an.php')); ?>" class="btn btn-brand">Xem danh sach phong</a>
+                <a href="<?php echo htmlspecialchars(base_url('lien-he.php')); ?>" class="btn btn-outline-brand">Nhan tu van</a>
+            </div>
+        </div>
+        <?php if (false): ?>
             <div class="project-showcase-grid">
-                <?php foreach ($featuredRooms as $index => $room): ?>
-                    <?php $cover = $featuredMediaMap[$room['id']][0] ?? null; ?>
+                <?php foreach ([] as $index => $room): ?>
+                    <?php $cover = null; ?>
                     <article class="project-card project-card-featured reveal-up" data-delay="<?php echo $index * 100; ?>">
                         <a class="project-card-media" href="<?php echo htmlspecialchars(base_url('chi-tiet-du-an.php?id=' . $room['id'])); ?>">
                             <?php if ($cover && $cover['media_type'] === 'image'): ?>
@@ -104,7 +111,7 @@ require_once __DIR__ . '/includes/header.php';
                                     <?php echo htmlspecialchars('Phòng ' . $room['room_number'] . ' - ' . $room['branch_name']); ?>
                                 </a>
                             </h3>
-                            <p class="project-card-location"><?php echo htmlspecialchars($room['branch_address']); ?></p>
+                            <p class="project-card-location"><?php echo htmlspecialchars($room['branch_name']); ?></p>
                             <div class="project-card-description">
                                 <?php echo htmlspecialchars($room['note'] ?: 'Phòng đang sẵn sàng tư vấn, phù hợp cho khách cần chốt nhanh theo khu vực.'); ?>
                             </div>

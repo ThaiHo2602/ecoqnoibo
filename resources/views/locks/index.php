@@ -122,7 +122,7 @@ $roomStatusLabels = [
             <thead>
                 <tr>
                     <th>Phòng</th>
-                    <th>Địa chỉ phòng</th>
+                    <th>Chi nhánh</th>
                     <th>Nhân viên</th>
                     <th>Trạng thái yêu cầu</th>
                     <th>Trạng thái phòng</th>
@@ -147,7 +147,7 @@ $roomStatusLabels = [
                             <div class="text-muted small"><?= e(number_format((float) $request['price'], 0, ',', '.')) ?> đ</div>
                         </td>
                         <td>
-                            <div><?= e($request['branch_address'] ?: '-') ?></div>
+                            <div><?= e($request['branch_name'] ?: '-') ?></div>
                             <div class="text-muted small"><?= e($request['branch_name'] . ' - ' . $request['district_name']) ?></div>
                         </td>
                         <td>

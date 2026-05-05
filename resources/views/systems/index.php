@@ -54,7 +54,7 @@
         <div class="panel-header">
             <div>
                 <h3><?= $editBranch ? 'Sửa nhanh chi nhánh' : 'Thêm nhanh chi nhánh' ?></h3>
-                <p class="panel-subtitle mb-0">Tạo chi nhánh ngay trong trang hệ thống để đúng với flow nghiệp vụ của bạn.</p>
+                <p class="panel-subtitle mb-0">Tạo chi nhánh ngay trong trang hệ thống để đúng với quy trình nghiệp vụ của bạn.</p>
             </div>
         </div>
 
@@ -107,11 +107,6 @@
             </div>
 
             <div>
-                <label class="form-label">Địa chỉ</label>
-                <input type="text" name="address" class="form-control" value="<?= e($editBranch['address'] ?? '') ?>" placeholder="Nhập địa chỉ chi nhánh" required>
-            </div>
-
-            <div>
                 <label class="form-label">Số điện thoại quản lý</label>
                 <input type="text" name="manager_phone" class="form-control" value="<?= e($editBranch['manager_phone'] ?? '') ?>" placeholder="Không bắt buộc">
             </div>
@@ -130,7 +125,7 @@
     <div class="panel-header">
         <div>
             <h3>Danh sách hệ thống</h3>
-            <p class="panel-subtitle mb-0">Chỉ hiện danh sách hệ thống ở trạng thái gọn. Bấm mũi tên để xổ chi nhánh bên trong khi cần xem.</p>
+            <p class="panel-subtitle mb-0">Chỉ hiển thị danh sách hệ thống ở trạng thái gọn. Bấm mũi tên để xổ chi nhánh bên trong khi cần xem.</p>
         </div>
         <span class="badge text-bg-light"><?= e((string) count($systems)) ?> hệ thống</span>
     </div>
@@ -181,8 +176,7 @@
                                     <tr>
                                         <th>Chi nhánh</th>
                                         <th>Quận</th>
-                                        <th>Địa chỉ</th>
-                                        <th>SDT quản lý</th>
+                                        <th>SĐT quản lý</th>
                                         <th class="text-end">Thao tác</th>
                                     </tr>
                                 </thead>
@@ -191,7 +185,6 @@
                                         <tr>
                                             <td><?= e($branch['name']) ?></td>
                                             <td><?= e($branch['district_name']) ?></td>
-                                            <td><?= e($branch['address']) ?></td>
                                             <td><?= e($branch['manager_phone'] ?: '-') ?></td>
                                             <td class="text-end">
                                                 <div class="d-inline-flex gap-2 flex-wrap justify-content-end">

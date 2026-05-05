@@ -1073,6 +1073,594 @@ body.sidebar-collapsed .sidebar-edge-toggle::before {
     box-shadow: var(--shadow-md);
 }
 
+.branch-card {
+    position: relative;
+}
+
+.branch-card-badges {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    right: 14px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.branch-card-badges span {
+    padding: 7px 12px;
+    border-radius: 999px;
+    color: #fff;
+    font-size: 0.76rem;
+    font-weight: 800;
+    background: rgba(23, 58, 122, 0.82);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.14);
+    backdrop-filter: blur(10px);
+}
+
+.branch-available-bar {
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+    padding: 10px 14px;
+    border-radius: 16px;
+    color: #fff;
+    font-weight: 800;
+    text-align: center;
+    background: linear-gradient(135deg, rgba(23, 58, 122, 0.92), rgba(47, 90, 173, 0.88));
+    box-shadow: 0 12px 26px rgba(23, 58, 122, 0.2);
+}
+
+.branch-card-body .listing-price {
+    margin-top: 14px;
+    font-size: 1.18rem;
+}
+
+.branch-detail-page {
+    display: grid;
+    gap: 22px;
+}
+
+.branch-detail-hero,
+.branch-detail-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+    gap: 22px;
+}
+
+.branch-detail-hero {
+    align-items: stretch;
+    padding: 28px;
+    border-radius: 30px;
+    background: var(--panel);
+    border: 1px solid rgba(255, 255, 255, 0.76);
+    box-shadow: var(--shadow-sm);
+}
+
+.branch-detail-hero h1 {
+    margin: 0 0 10px;
+    color: var(--ink);
+    font-weight: 900;
+}
+
+.branch-detail-hero p {
+    color: var(--muted);
+    margin-bottom: 16px;
+}
+
+.branch-fee-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.branch-fee-grid div,
+.selected-room-card,
+.branch-gallery-panel,
+.branch-room-panel {
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.78);
+    box-shadow: var(--shadow-sm);
+}
+
+.branch-fee-grid div {
+    padding: 14px;
+}
+
+.branch-fee-grid span {
+    display: block;
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.branch-fee-grid strong {
+    display: block;
+    margin-top: 6px;
+    color: var(--brand);
+}
+
+.branch-gallery-panel,
+.branch-room-panel {
+    padding: 18px;
+}
+
+.branch-gallery-stage {
+    aspect-ratio: 16 / 10;
+    border-radius: 22px;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(23, 58, 122, 0.08), rgba(216, 170, 65, 0.14));
+}
+
+.branch-gallery-stage img,
+.branch-gallery-stage video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.branch-gallery-thumbs {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.branch-gallery-thumb {
+    aspect-ratio: 1 / 0.72;
+    padding: 0;
+    border: 2px solid transparent;
+    border-radius: 14px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.72);
+    cursor: pointer;
+}
+
+.branch-gallery-thumb.is-active {
+    border-color: var(--brand);
+}
+
+.branch-gallery-thumb img,
+.branch-gallery-thumb video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.branch-room-picker {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.branch-room-option {
+    min-height: 104px;
+    padding: 14px;
+    border: 1px solid rgba(23, 58, 122, 0.12);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--ink);
+    text-align: left;
+    cursor: pointer;
+    transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+
+.branch-room-option:hover,
+.branch-room-option.is-active {
+    transform: translateY(-2px);
+    border-color: rgba(23, 58, 122, 0.42);
+    box-shadow: 0 14px 30px rgba(23, 58, 122, 0.12);
+}
+
+.branch-room-option strong,
+.branch-room-option span,
+.branch-room-option em {
+    display: block;
+}
+
+.branch-room-option strong {
+    font-size: 1.1rem;
+    color: var(--brand);
+}
+
+.branch-room-option span {
+    margin-top: 6px;
+    font-weight: 800;
+}
+
+.branch-room-option em {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-style: normal;
+}
+
+.selected-room-card {
+    padding: 18px;
+}
+
+.selected-room-card h2 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 900;
+}
+
+.selected-room-price {
+    margin-top: 8px;
+    color: #ec7300;
+    font-size: 1.35rem;
+    font-weight: 900;
+}
+
+.branch-detail-modern {
+    max-width: 1280px;
+    margin: 0 auto;
+    color: #17223b;
+}
+
+.branch-detail-topline,
+.branch-detail-heading,
+.branch-room-strip-card,
+.branch-info-card,
+.branch-side-panel {
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(23, 58, 122, 0.08);
+    box-shadow: 0 18px 45px rgba(15, 25, 61, 0.08);
+}
+
+.branch-detail-topline {
+    padding: 14px 18px;
+}
+
+.branch-breadcrumb {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    color: #315aa8;
+    font-weight: 700;
+}
+
+.branch-detail-heading {
+    padding: 24px;
+}
+
+.branch-title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.branch-title-row h1 {
+    margin: 0;
+    font-size: clamp(1.8rem, 3vw, 2.55rem);
+    font-weight: 900;
+    color: #111b3d;
+}
+
+.branch-address-line {
+    margin: 10px 0 0;
+    color: #4d5d7a;
+    font-weight: 600;
+}
+
+.branch-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    font-weight: 900;
+    font-size: 0.82rem;
+}
+
+.branch-badge.verified {
+    color: #13804f;
+    background: #dff7e9;
+}
+
+.branch-badge.hot {
+    color: #fff;
+    background: linear-gradient(135deg, #ff453a, #dc2626);
+}
+
+.branch-badge.warning {
+    color: #fff;
+    background: linear-gradient(135deg, #ffb020, #f59e0b);
+}
+
+.branch-detail-main-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 24px;
+    align-items: start;
+}
+
+.branch-detail-main {
+    min-width: 0;
+    display: grid;
+    gap: 22px;
+}
+
+.branch-gallery-card {
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    background: #eef3fb;
+    box-shadow: 0 18px 45px rgba(15, 25, 61, 0.08);
+}
+
+.branch-gallery-stage.modern {
+    aspect-ratio: 16 / 9;
+    border-radius: 20px;
+}
+
+.branch-gallery-stage.modern img,
+.branch-gallery-stage.modern video {
+    cursor: zoom-in;
+}
+
+.branch-gallery-arrow,
+.branch-public-arrow {
+    position: absolute;
+    top: 50%;
+    width: 46px;
+    height: 46px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    color: #173a7a;
+    font-size: 2rem;
+    line-height: 1;
+    display: grid;
+    place-items: center;
+    box-shadow: 0 12px 28px rgba(15, 25, 61, 0.16);
+    transform: translateY(-50%);
+    z-index: 2;
+}
+
+.branch-gallery-arrow.prev,
+.branch-public-arrow.prev {
+    left: 18px;
+}
+
+.branch-gallery-arrow.next,
+.branch-public-arrow.next {
+    right: 18px;
+}
+
+.branch-gallery-counter,
+.branch-public-counter {
+    position: absolute;
+    right: 18px;
+    bottom: 18px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    color: #fff;
+    background: rgba(18, 28, 54, 0.68);
+    font-weight: 900;
+}
+
+.branch-gallery-thumbs.modern {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.branch-gallery-thumbs.modern .branch-gallery-thumb {
+    border-radius: 14px;
+    border-width: 2px;
+}
+
+.branch-room-strip-card,
+.branch-info-card,
+.branch-side-panel {
+    padding: 22px;
+}
+
+.branch-section-head,
+.public-room-list-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.branch-section-head h2,
+.branch-info-card h2 {
+    margin: 0;
+    color: #10245a;
+    font-size: 1.08rem;
+    font-weight: 900;
+}
+
+.branch-section-head h2 span,
+.branch-info-card h2 span {
+    color: #66748f;
+    font-weight: 700;
+}
+
+.status-legend {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    color: #53627d;
+    font-size: 0.86rem;
+    font-weight: 700;
+}
+
+.dot {
+    width: 9px;
+    height: 9px;
+    display: inline-block;
+    margin-right: 7px;
+    border-radius: 50%;
+}
+
+.dot.green { background: #18a058; }
+.dot.yellow { background: #f5b51b; }
+.dot.red { background: #ef3d32; }
+
+.branch-room-strip {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(150px, 1fr));
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.branch-room-card,
+.public-room-card {
+    min-height: 112px;
+    padding: 16px;
+    border: 1px solid rgba(23, 58, 122, 0.1);
+    border-radius: 14px;
+    background: #fff;
+    text-align: left;
+    transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+
+.branch-room-card.is-active,
+.public-room-card.is-active {
+    border-color: #0b63f6;
+    box-shadow: 0 14px 34px rgba(11, 99, 246, 0.14);
+}
+
+.branch-room-card strong,
+.public-room-card strong {
+    display: block;
+    color: #10245a;
+    font-size: 1.15rem;
+}
+
+.branch-room-card em,
+.public-room-card em {
+    display: block;
+    margin-top: 10px;
+    color: #26344f;
+    font-style: normal;
+    font-weight: 800;
+}
+
+.room-status,
+.public-status {
+    display: inline-flex;
+    margin-top: 8px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 900;
+}
+
+.room-status.green,
+.public-status.green { color: #15804f; background: #dff7e9; }
+.room-status.yellow,
+.public-status.yellow { color: #a86600; background: #fff1c7; }
+.room-status.red,
+.public-status.red { color: #d12b20; background: #ffe1df; }
+
+.branch-info-grid,
+.selected-room-spec-grid,
+.public-info-grid,
+.public-selected-specs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.branch-info-grid div,
+.selected-room-spec-grid div,
+.public-info-grid div,
+.public-selected-specs div,
+.branch-fee-row div,
+.public-fee-row div {
+    padding: 14px;
+    border-radius: 14px;
+    background: #f8fbff;
+    border: 1px solid rgba(23, 58, 122, 0.08);
+}
+
+.branch-info-grid .wide,
+.public-info-grid .wide {
+    grid-column: span 2;
+}
+
+.branch-info-grid span,
+.selected-room-spec-grid span,
+.public-info-grid span,
+.public-selected-specs span,
+.branch-fee-row span,
+.public-fee-row span {
+    display: block;
+    color: #67758f;
+    font-size: 0.84rem;
+    font-weight: 700;
+}
+
+.branch-info-grid strong,
+.selected-room-spec-grid strong,
+.public-info-grid strong,
+.public-selected-specs strong,
+.branch-fee-row strong,
+.public-fee-row strong {
+    display: block;
+    margin-top: 6px;
+    color: #17223b;
+}
+
+.selected-room-description,
+.public-selected-note {
+    margin: 16px 0 0;
+    color: #465672;
+    line-height: 1.75;
+}
+
+.branch-fee-row,
+.public-fee-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.branch-fee-note,
+.public-fee-note,
+.side-verified-note {
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 12px;
+    color: #1753aa;
+    background: #eef5ff;
+    text-align: center;
+    font-weight: 700;
+}
+
+.branch-side-panel {
+    position: sticky;
+    top: 22px;
+}
+
+.side-label {
+    color: #566785;
+    font-weight: 800;
+}
+
+.branch-side-panel h2 {
+    margin: 8px 0;
+    font-size: 1.4rem;
+}
+
+.side-price {
+    color: #f04b23;
+    font-size: 1.45rem;
+    font-weight: 900;
+}
+
 .listing-card-media {
     position: relative;
     aspect-ratio: 1 / 0.78;
@@ -1884,6 +2472,9 @@ body.app-loading .main-content {
 
     .content-grid,
     .room-detail-top,
+    .branch-detail-hero,
+    .branch-detail-layout,
+    .branch-detail-main-grid,
     .listing-hero,
     .auth-panel {
         grid-template-columns: 1fr;
@@ -1970,6 +2561,8 @@ body.app-loading .main-content {
     .detail-spec-grid,
     .detail-list,
     .grid-2,
+    .branch-fee-grid,
+    .branch-room-picker,
     .report-secondary-stats,
     .room-stats-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2097,10 +2690,31 @@ body.app-loading .main-content {
     .detail-list,
     .grid-2,
     .stats-grid,
+    .branch-fee-grid,
+    .branch-room-picker,
+    .branch-gallery-thumbs,
+    .branch-info-grid,
+    .selected-room-spec-grid,
+    .branch-fee-row,
     .report-secondary-stats,
     .room-stats-grid,
     .room-gallery-grid {
         grid-template-columns: 1fr;
+    }
+
+    .branch-detail-heading,
+    .branch-room-strip-card,
+    .branch-info-card,
+    .branch-side-panel {
+        padding: 18px;
+    }
+
+    .branch-gallery-thumbs.modern {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .branch-side-panel {
+        position: static;
     }
 
     .listing-search {
@@ -2166,5 +2780,889 @@ body.app-loading .main-content {
     .room-form-header,
     .room-form-content {
         padding: 16px;
+    }
+}
+
+/* Internal branch detail: stable gallery/tools layout and no text overflow. */
+.branch-detail-modern {
+    width: min(100% - 32px, 1280px);
+    max-width: 1280px;
+    margin-inline: auto;
+}
+
+.branch-detail-modern,
+.branch-detail-modern * {
+    box-sizing: border-box;
+}
+
+.branch-detail-modern .branch-detail-main-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 340px);
+    gap: 24px;
+    align-items: start;
+}
+
+.branch-detail-modern .branch-detail-main,
+.branch-detail-modern .branch-gallery-card,
+.branch-detail-modern .branch-gallery-stage,
+.branch-detail-modern .branch-gallery-thumbs,
+.branch-detail-modern .branch-room-strip-card,
+.branch-detail-modern .branch-info-card,
+.branch-detail-modern .branch-side-panel,
+.branch-detail-modern .branch-room-card,
+.branch-detail-modern .btn {
+    min-width: 0;
+}
+
+.branch-detail-modern .branch-side-panel {
+    position: static !important;
+    top: auto !important;
+    width: 100%;
+    max-width: none;
+    overflow: hidden;
+    align-self: start;
+    z-index: auto;
+}
+
+.branch-detail-modern .branch-side-panel h2,
+.branch-detail-modern .side-price,
+.branch-detail-modern .side-label,
+.branch-detail-modern .side-verified-note,
+.branch-detail-modern .branch-info-grid strong,
+.branch-detail-modern .selected-room-spec-grid strong,
+.branch-detail-modern .branch-fee-row strong,
+.branch-detail-modern .selected-room-description {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.branch-detail-modern .btn {
+    white-space: normal;
+    line-height: 1.35;
+    text-align: center;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.branch-detail-modern .branch-room-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 16px;
+    overflow-x: visible;
+    padding-bottom: 0;
+}
+
+.branch-detail-modern .branch-room-card {
+    width: 100%;
+    min-height: 126px;
+    min-width: 0;
+    overflow: hidden;
+    padding: 18px 20px;
+    border-radius: 16px;
+}
+
+.branch-detail-modern .branch-room-card strong,
+.branch-detail-modern .branch-room-card em,
+.branch-detail-modern .room-status {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.branch-detail-modern .branch-room-card strong {
+    line-height: 1.25;
+    font-size: clamp(1rem, 1.2vw, 1.15rem);
+}
+
+.branch-detail-modern .branch-room-card em {
+    white-space: normal;
+    line-height: 1.3;
+    font-size: clamp(0.86rem, 1vw, 0.98rem);
+}
+
+.branch-detail-modern .room-status {
+    white-space: normal;
+    line-height: 1.25;
+}
+
+.branch-detail-modern .branch-section-head {
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.branch-detail-modern .status-legend {
+    min-width: 0;
+}
+
+.branch-detail-modern .branch-gallery-stage.modern {
+    width: 100%;
+    overflow: hidden;
+}
+
+.branch-detail-modern .branch-gallery-thumbs.modern {
+    grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+}
+
+@media (max-width: 900px) {
+    .branch-detail-modern {
+        width: min(100% - 28px, 1280px);
+    }
+
+    .branch-detail-modern .branch-detail-main-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .branch-detail-modern .branch-detail-main {
+        display: contents;
+    }
+
+    .branch-detail-modern .branch-gallery-card {
+        order: 1;
+    }
+
+    .branch-detail-modern .branch-gallery-thumbs {
+        order: 2;
+    }
+
+    .branch-detail-modern .branch-side-panel {
+        position: static !important;
+        width: 100%;
+        max-width: none;
+        order: 3;
+    }
+
+    .branch-detail-modern .branch-room-strip-card {
+        order: 4;
+    }
+
+    .branch-detail-modern .branch-info-card {
+        order: 5;
+    }
+
+    .branch-detail-modern .branch-room-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .branch-detail-modern .branch-info-grid,
+    .branch-detail-modern .selected-room-spec-grid,
+    .branch-detail-modern .branch-fee-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 520px) {
+    .branch-detail-modern {
+        width: min(100% - 20px, 1280px);
+        gap: 16px;
+    }
+
+    .branch-detail-modern .branch-detail-heading,
+    .branch-detail-modern .branch-room-strip-card,
+    .branch-detail-modern .branch-info-card,
+    .branch-detail-modern .branch-side-panel {
+        padding: 14px;
+        border-radius: 16px;
+    }
+
+    .branch-detail-modern .branch-room-strip,
+    .branch-detail-modern .branch-info-grid,
+    .branch-detail-modern .selected-room-spec-grid,
+    .branch-detail-modern .branch-fee-row {
+        grid-template-columns: 1fr;
+    }
+
+    .branch-detail-modern .branch-room-card {
+        min-height: auto;
+        padding: 14px;
+    }
+
+    .branch-detail-modern .branch-room-card strong {
+        font-size: 1.05rem;
+    }
+
+    .branch-detail-modern .branch-room-card em {
+        font-size: 0.95rem;
+    }
+
+    .branch-detail-modern .branch-gallery-stage.modern {
+        aspect-ratio: 4 / 3;
+    }
+
+    .branch-detail-modern .branch-gallery-arrow {
+        width: 40px;
+        height: 40px;
+        font-size: 1.65rem;
+    }
+
+    .branch-detail-modern .branch-gallery-arrow.prev {
+        left: 10px;
+    }
+
+    .branch-detail-modern .branch-gallery-arrow.next {
+        right: 10px;
+    }
+
+    .branch-detail-modern .branch-gallery-counter {
+        right: 10px;
+        bottom: 10px;
+    }
+}
+
+.mobile-listing-brand,
+.mobile-filter-icon,
+.mobile-branch-list-head,
+.mobile-branch-stats,
+.mobile-bottom-nav {
+    display: none;
+}
+
+.listing-summary i {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    html:has(.mobile-branch-app),
+    body:has(.mobile-branch-app) {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    body.app-body:has(.mobile-branch-app) {
+        background:
+            radial-gradient(circle at top right, rgba(240, 184, 58, 0.26), transparent 28%),
+            radial-gradient(circle at 12% 6%, rgba(255, 255, 255, 0.16), transparent 24%),
+            linear-gradient(180deg, #07327c 0%, #0b3f95 19%, #f4f8ff 43%, #ffffff 100%);
+    }
+
+    .app-shell:has(.mobile-branch-app) {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+        width: 100%;
+        min-height: 100vh;
+        padding: 14px;
+    }
+
+    .main-content:has(.mobile-branch-app) {
+        width: min(100%, 720px);
+        margin: 0 auto;
+        padding: 0 0 20px;
+        overflow: visible;
+    }
+
+    .app-shell:has(.mobile-branch-app) .sidebar-edge-toggle {
+        display: none !important;
+    }
+
+    .app-shell:has(.mobile-branch-app) .sidebar {
+        display: flex;
+        position: fixed;
+        top: 14px;
+        left: 14px;
+        bottom: 14px;
+        width: min(320px, calc(100vw - 28px));
+        height: auto;
+        max-height: none;
+        margin: 0;
+        border-radius: 28px;
+        transform: translateX(calc(-100% - 18px));
+        transition: transform var(--transition);
+        z-index: 1200;
+    }
+
+    body.sidebar-open .app-shell:has(.mobile-branch-app) .sidebar {
+        transform: translateX(0);
+    }
+
+    .mobile-branch-app,
+    .mobile-branch-app * {
+        box-sizing: border-box;
+        min-width: 0;
+    }
+
+    .mobile-branch-app {
+        position: relative;
+        display: grid;
+        gap: 14px;
+        padding-bottom: 12px;
+        color: #0b1f44;
+    }
+
+    .listing-hero {
+        position: relative;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+        margin: 0 -12px 0;
+        padding: 22px 18px 18px;
+        border: 0;
+        border-radius: 0 0 34px 34px;
+        color: #fff;
+        overflow: hidden;
+        background:
+            radial-gradient(circle at 84% 22%, rgba(240, 184, 58, 0.36), transparent 22%),
+            radial-gradient(circle at 8% 0%, rgba(255, 255, 255, 0.16), transparent 25%),
+            linear-gradient(145deg, #062968 0%, #0a3d91 54%, #0b2e6f 100%);
+        box-shadow: 0 22px 48px rgba(4, 32, 82, 0.24);
+        backdrop-filter: blur(18px);
+    }
+
+    .listing-hero::after {
+        content: "";
+        position: absolute;
+        right: -42px;
+        top: 64px;
+        width: 190px;
+        height: 70px;
+        pointer-events: none;
+        border-radius: 999px;
+        background: linear-gradient(120deg, transparent, rgba(240, 184, 58, 0.72), rgba(255, 255, 255, 0.5), transparent);
+        filter: blur(10px);
+        transform: rotate(-31deg);
+        opacity: 0.7;
+    }
+
+    .mobile-listing-brand {
+        display: none;
+    }
+
+    .mobile-header-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .mobile-header-actions form {
+        margin: 0;
+    }
+
+    .mobile-brand-mark {
+        width: 74px;
+        height: 74px;
+        display: grid;
+        place-items: center;
+        border-radius: 28px;
+        background: rgba(255, 255, 255, 0.14);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        box-shadow: 0 16px 34px rgba(0, 0, 0, 0.16);
+        backdrop-filter: blur(14px);
+    }
+
+    .mobile-brand-mark img {
+        width: 66px;
+        height: 66px;
+        object-fit: contain;
+        filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.18));
+    }
+
+    .mobile-header-icon {
+        width: 46px;
+        height: 46px;
+        border: 1px solid rgba(255, 255, 255, 0.34);
+        border-radius: 18px;
+        color: #fff;
+        background: rgba(255, 255, 255, 0.12);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+        font-size: 1.35rem;
+        line-height: 1;
+        backdrop-filter: blur(14px);
+    }
+
+    .mobile-header-icon.is-danger {
+        font-size: 1.15rem;
+    }
+
+    .listing-hero > div:not(.listing-summary):not(.mobile-listing-brand) {
+        position: relative;
+        z-index: 1;
+    }
+
+    .listing-hero .eyebrow {
+        display: inline-flex;
+        width: fit-content;
+        max-width: 100%;
+        margin-bottom: 10px;
+        padding: 7px 13px;
+        border-radius: 999px;
+        color: #f5c862;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(240, 184, 58, 0.34);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        font-size: 0.72rem;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+    }
+
+    .listing-title {
+        margin: 0;
+        color: #fff;
+        font-size: clamp(2rem, 9vw, 2.65rem);
+        line-height: 1;
+        letter-spacing: 0;
+        text-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+    }
+
+    .listing-subtitle {
+        display: none;
+    }
+
+    .listing-summary {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .listing-summary div {
+        min-height: 94px;
+        display: grid;
+        grid-template-columns: 42px minmax(0, 1fr);
+        grid-template-rows: auto auto;
+        column-gap: 10px;
+        align-items: center;
+        padding: 12px;
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.76);
+        border: 1px solid rgba(255, 255, 255, 0.78);
+        box-shadow: 0 16px 34px rgba(4, 32, 82, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(18px);
+    }
+
+    .listing-summary i {
+        grid-row: span 2;
+        width: 42px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        color: #0a3d91;
+        background: rgba(255, 255, 255, 0.68);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 10px 22px rgba(10, 45, 100, 0.12);
+        font-style: normal;
+        font-weight: 900;
+    }
+
+    .listing-summary div:nth-child(2) i,
+    .listing-summary div:nth-child(4) i {
+        color: #d88914;
+    }
+
+    .listing-summary span {
+        color: #52637f;
+        font-size: clamp(0.72rem, 2.8vw, 0.88rem);
+        line-height: 1.25;
+    }
+
+    .listing-summary strong {
+        margin-top: 2px;
+        color: #0b2e6f;
+        font-size: clamp(1.45rem, 7vw, 2rem);
+        line-height: 1;
+    }
+
+    .listing-filter-panel {
+        margin: 0;
+        padding: 16px;
+        border-radius: 26px;
+        background: rgba(255, 255, 255, 0.76);
+        border: 1px solid rgba(255, 255, 255, 0.78);
+        box-shadow: 0 18px 40px rgba(10, 45, 100, 0.13);
+        backdrop-filter: blur(18px);
+    }
+
+    .listing-filter-panel .panel-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+
+    .listing-filter-panel h3 {
+        margin: 0 0 4px;
+        color: #0b2e6f;
+        font-size: 1.22rem;
+        font-weight: 900;
+    }
+
+    .listing-filter-panel .panel-subtitle {
+        color: #64718a;
+        font-size: 0.84rem;
+        line-height: 1.45;
+    }
+
+    .mobile-filter-icon {
+        flex: 0 0 auto;
+        width: 48px;
+        height: 48px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        color: #0a3d91;
+        background: rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(11, 46, 111, 0.1);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        font-size: 1.3rem;
+        font-weight: 900;
+    }
+
+    .listing-filters {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .listing-filters .form-control,
+    .listing-filters .form-select {
+        width: 100%;
+        max-width: 100%;
+        min-height: 48px;
+        padding: 11px 13px;
+        border-radius: 16px;
+        color: #0b1f44;
+        background-color: rgba(255, 255, 255, 0.68);
+        border: 1px solid rgba(159, 176, 205, 0.36);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82), 0 8px 20px rgba(10, 45, 100, 0.06);
+        font-size: 0.88rem;
+    }
+
+    .listing-filters select[name="branch_id"],
+    .listing-filters .listing-search {
+        grid-column: 1 / -1;
+    }
+
+    .listing-filters .btn {
+        min-height: 50px;
+        padding: 10px 12px;
+        border-radius: 18px;
+        white-space: normal;
+        line-height: 1.25;
+        text-align: center;
+        font-weight: 900;
+    }
+
+    .listing-filters .btn-outline-secondary {
+        color: #0b2e6f;
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(10, 61, 145, 0.42);
+    }
+
+    .listing-filters .btn-primary {
+        color: #fff;
+        background: linear-gradient(135deg, #073b91, #0d4fb8);
+        border: 1px solid rgba(240, 184, 58, 0.82);
+        box-shadow: 0 16px 30px rgba(10, 61, 145, 0.22), inset -18px -10px 22px rgba(240, 184, 58, 0.18);
+    }
+
+    .mobile-branch-list-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 0 2px;
+    }
+
+    .mobile-branch-list-head h3 {
+        margin: 0;
+        color: #0b2e6f;
+        font-size: 1.18rem;
+        font-weight: 900;
+    }
+
+    .mobile-branch-list-head a {
+        color: #0a3d91;
+        font-size: 0.9rem;
+        font-weight: 800;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .branch-listing-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .branch-listing-grid .branch-card {
+        display: grid;
+        grid-template-columns: 96px minmax(0, 1fr);
+        gap: 12px;
+        min-height: 108px;
+        padding: 10px;
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.78);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 14px 28px rgba(10, 45, 100, 0.1);
+        backdrop-filter: blur(16px);
+        overflow: hidden;
+    }
+
+    .branch-listing-grid .branch-card:hover {
+        transform: none;
+        box-shadow: 0 14px 28px rgba(10, 45, 100, 0.1);
+    }
+
+    .branch-listing-grid .listing-card-media {
+        width: 96px;
+        height: 88px;
+        aspect-ratio: auto;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
+    .branch-listing-grid .listing-card-media img,
+    .branch-listing-grid .listing-card-media video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .branch-listing-grid .listing-card-placeholder {
+        font-size: 0.74rem;
+        text-align: center;
+    }
+
+    .branch-listing-grid .branch-card-badges,
+    .branch-listing-grid .branch-available-bar,
+    .branch-listing-grid .listing-price,
+    .branch-listing-grid .listing-tags {
+        display: none;
+    }
+
+    .branch-listing-grid .branch-card-body {
+        display: grid;
+        align-content: center;
+        gap: 4px;
+        padding: 0;
+        min-width: 0;
+    }
+
+    .branch-listing-grid .branch-card-body h3 {
+        margin: 0;
+        color: #0b2e6f;
+        font-size: 0.98rem;
+        line-height: 1.25;
+        font-weight: 900;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .branch-listing-grid .listing-address,
+    .branch-listing-grid .listing-meta {
+        margin: 0;
+        color: #65738c;
+        font-size: 0.78rem;
+        line-height: 1.35;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .branch-listing-grid .listing-meta::before {
+        content: "✓ Phù hợp";
+        display: inline-flex;
+        width: fit-content;
+        margin-right: 8px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        color: #16834f;
+        background: #daf7e7;
+        font-size: 0.74rem;
+        font-weight: 900;
+    }
+
+    .mobile-branch-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+        margin-top: 4px;
+        padding-top: 6px;
+        border-top: 1px solid rgba(10, 61, 145, 0.08);
+    }
+
+    .mobile-branch-stats span {
+        display: grid;
+        gap: 1px;
+        text-align: center;
+    }
+
+    .mobile-branch-stats b {
+        color: #65738c;
+        font-size: 0.68rem;
+        font-weight: 700;
+    }
+
+    .mobile-branch-stats strong {
+        color: #0b2e6f;
+        font-size: 1.05rem;
+        line-height: 1;
+        font-weight: 900;
+    }
+
+    .mobile-branch-stats span:nth-child(2) strong {
+        color: #16834f;
+    }
+
+    .mobile-branch-stats span:nth-child(3) strong {
+        color: #f07a16;
+    }
+
+    .listing-pagination {
+        margin-top: 14px;
+        padding: 12px;
+        border-radius: 20px;
+    }
+
+    .listing-pagination-summary {
+        width: 100%;
+        text-align: center;
+        font-size: 0.78rem;
+    }
+
+    .listing-pagination-pages {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .pagination-button,
+    .pagination-ellipsis {
+        min-width: 36px;
+        height: 36px;
+        padding: 0 11px;
+        font-size: 0.82rem;
+    }
+
+    .mobile-bottom-nav {
+        position: fixed;
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        z-index: 2100;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 4px;
+        padding: 8px;
+        border-radius: 28px;
+        background: rgba(255, 255, 255, 0.84);
+        border: 1px solid rgba(255, 255, 255, 0.84);
+        box-shadow: 0 18px 46px rgba(10, 45, 100, 0.2);
+        backdrop-filter: blur(20px);
+    }
+
+    .mobile-bottom-nav a {
+        min-height: 56px;
+        display: grid;
+        place-items: center;
+        gap: 3px;
+        border-radius: 22px;
+        color: #5f6e88;
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .mobile-bottom-nav a span {
+        font-size: 1.18rem;
+        line-height: 1;
+    }
+
+    .mobile-bottom-nav a.is-active {
+        color: #0a3d91;
+        background: rgba(255, 255, 255, 0.82);
+        box-shadow: 0 10px 24px rgba(10, 61, 145, 0.12);
+    }
+}
+
+@media (max-width: 420px) {
+    .main-content:has(.mobile-branch-app) {
+        width: min(100% - 18px, 420px);
+    }
+
+    .listing-hero {
+        margin-inline: -9px;
+        padding: 18px 14px 16px;
+        border-radius: 0 0 28px 28px;
+    }
+
+    .mobile-brand-mark {
+        width: 64px;
+        height: 64px;
+        border-radius: 24px;
+    }
+
+    .mobile-brand-mark img {
+        width: 58px;
+        height: 58px;
+    }
+
+    .listing-summary {
+        gap: 8px;
+    }
+
+    .listing-summary div {
+        min-height: 88px;
+        grid-template-columns: 38px minmax(0, 1fr);
+        column-gap: 8px;
+        padding: 10px;
+        border-radius: 19px;
+    }
+
+    .listing-summary i {
+        width: 38px;
+        height: 38px;
+    }
+
+    .listing-filter-panel {
+        padding: 13px;
+        border-radius: 22px;
+    }
+
+    .listing-filters {
+        gap: 8px;
+    }
+
+    .listing-filters .form-control,
+    .listing-filters .form-select {
+        min-height: 46px;
+        padding: 10px;
+        border-radius: 14px;
+        font-size: 0.82rem;
+    }
+
+    .listing-filters .btn {
+        min-height: 48px;
+        border-radius: 16px;
+        font-size: 0.86rem;
+    }
+
+    .branch-listing-grid .branch-card {
+        grid-template-columns: 86px minmax(0, 1fr);
+        gap: 10px;
+        padding: 9px;
+        border-radius: 19px;
+    }
+
+    .branch-listing-grid .listing-card-media {
+        width: 86px;
+        height: 82px;
+        border-radius: 14px;
+    }
+
+    .branch-listing-grid .branch-card-body h3 {
+        font-size: 0.92rem;
+    }
+
+    .mobile-branch-stats b {
+        font-size: 0.64rem;
+    }
+
+    .mobile-branch-stats strong {
+        font-size: 0.98rem;
     }
 }

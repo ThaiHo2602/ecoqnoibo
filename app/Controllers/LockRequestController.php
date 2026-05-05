@@ -49,7 +49,6 @@ class LockRequestController
                        branches.id AS branch_id,
                        branches.ward_id,
                        branches.name AS branch_name,
-                       branches.address AS branch_address,
                        systems.id AS system_id,
                        systems.name AS system_name,
                        wards.name AS ward_name,

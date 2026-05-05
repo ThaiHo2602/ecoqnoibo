@@ -5,10 +5,10 @@ $statusLabels = [
     'da_lock' => 'Đã lock',
 ];
 $typeLabels = [
-    'duplet' => 'Duplet',
+    'duplex' => 'Duplex',
     'studio' => 'Studio',
-    'one_bedroom' => '1 phòng ngủ',
-    'two_bedroom' => '2 phòng ngủ',
+    'one_bedroom' => 'Studio',
+    'two_bedroom' => 'Studio',
     'kiot' => 'Kiot',
 ];
 $furnitureLabels = [
@@ -106,7 +106,7 @@ $imageMedia = array_values(array_filter(
         <aside class="room-summary-card">
             <div class="eyebrow">Chi tiết phòng</div>
             <h1><?= e('Phòng ' . $room['room_number'] . ' - ' . $room['branch_name']) ?></h1>
-            <p class="room-summary-address"><?= e($room['branch_address']) ?></p>
+            <p class="room-summary-address"><?= e($room['branch_name']) ?></p>
             <div class="room-summary-price"><?= e(number_format((float) $room['price'], 0, ',', '.')) ?>đ/tháng</div>
 
             <div class="d-flex flex-wrap gap-2 mt-3">
@@ -194,10 +194,10 @@ $imageMedia = array_values(array_filter(
             <div><span>Số phòng</span><strong><?= e($room['room_number']) ?></strong></div>
             <div><span>Giá phòng</span><strong><?= e(number_format((float) $room['price'], 0, ',', '.')) ?>đ</strong></div>
             <div><span>Loại phòng</span><strong><?= e($typeLabels[$room['room_type']] ?? $room['room_type']) ?></strong></div>
-            <div><span>Tiền điện</span><strong><?= e(number_format((float) $room['electricity_fee'], 0, ',', '.')) ?>đ</strong></div>
-            <div><span>Tiền nước</span><strong><?= e(number_format((float) $room['water_fee'], 0, ',', '.')) ?>đ</strong></div>
-            <div><span>Phí dịch vụ</span><strong><?= e(number_format((float) $room['service_fee'], 0, ',', '.')) ?>đ</strong></div>
-            <div><span>Phí gửi xe</span><strong><?= e(number_format((float) $room['parking_fee'], 0, ',', '.')) ?>đ</strong></div>
+            <div><span>Tiền điện</span><strong><?= e(number_format((float) ($room['electricity_price'] ?? 0), 0, ',', '.')) ?>đ</strong></div>
+            <div><span>Tiền nước</span><strong><?= e(number_format((float) ($room['water_price'] ?? 0), 0, ',', '.')) ?>đ</strong></div>
+            <div><span>Phí dịch vụ</span><strong><?= e(number_format((float) ($room['service_price'] ?? 0), 0, ',', '.')) ?>đ</strong></div>
+            <div><span>Phí gửi xe</span><strong><?= e(number_format((float) ($room['parking_price'] ?? 0), 0, ',', '.')) ?>đ</strong></div>
             <div><span>Nội thất</span><strong><?= e($furnitureLabels[$room['furniture_status']] ?? $room['furniture_status']) ?></strong></div>
             <div><span>Ban công</span><strong><?= (int) $room['has_balcony'] === 1 ? 'Có' : 'Không' ?></strong></div>
             <div><span>Loại cửa sổ</span><strong><?= e($windowLabels[$room['window_type']] ?? $room['window_type']) ?></strong></div>
@@ -216,7 +216,7 @@ $imageMedia = array_values(array_filter(
             <div class="map-placeholder">
                 <div class="map-pin">📍</div>
                 <div>
-                    <div class="fw-semibold"><?= e($room['branch_address']) ?></div>
+                    <div class="fw-semibold"><?= e($room['branch_name']) ?></div>
                     <div class="text-muted">Khu vực: <?= e($room['district_name']) ?></div>
                 </div>
             </div>
@@ -230,7 +230,6 @@ $imageMedia = array_values(array_filter(
                 </div>
             </div>
             <div class="detail-list">
-                <div><span>Địa chỉ</span><strong><?= e($room['branch_address']) ?></strong></div>
                 <div><span>Số điện thoại quản lý</span><strong><?= e($room['manager_phone'] ?: 'Chưa cập nhật') ?></strong></div>
             </div>
         </div>

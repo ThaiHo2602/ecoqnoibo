@@ -29,6 +29,7 @@ $legacyLandingRedirects = [
     'gioi-thieu.php' => '/gioi-thieu',
     'du-an.php' => '/du-an',
     'chi-tiet-du-an.php' => '/chi-tiet-du-an',
+    'chi-tiet-chi-nhanh.php' => '/chi-tiet-chi-nhanh',
     'tin-tuc.php' => '/tin-tuc',
     'bai-viet.php' => '/bai-viet',
     'tuyen-dung.php' => '/tuyen-dung',
@@ -70,6 +71,11 @@ if (request_method() === 'GET' && preg_match('#^rooms/(\d+)$#', $path, $matches)
     exit;
 }
 
+if (request_method() === 'GET' && preg_match('#^branches/(\d+)/detail$#', $path, $matches) === 1) {
+    $roomController->branchDetail((int) $matches[1]);
+    exit;
+}
+
 if (request_method() === 'GET' && preg_match('#^rooms/(\d+)/manage-data$#', $path, $matches) === 1) {
     $roomController->manageData((int) $matches[1]);
     exit;
@@ -94,6 +100,8 @@ $routes = [
     'GET /du-an.php' => fn () => $renderCompanyPage('du-an.php'),
     'GET /chi-tiet-du-an' => fn () => $renderCompanyPage('chi-tiet-du-an.php'),
     'GET /chi-tiet-du-an.php' => fn () => $renderCompanyPage('chi-tiet-du-an.php'),
+    'GET /chi-tiet-chi-nhanh' => fn () => $renderCompanyPage('chi-tiet-chi-nhanh.php'),
+    'GET /chi-tiet-chi-nhanh.php' => fn () => $renderCompanyPage('chi-tiet-chi-nhanh.php'),
     'GET /tin-tuc' => fn () => $renderCompanyPage('tin-tuc.php'),
     'GET /tin-tuc.php' => fn () => $renderCompanyPage('tin-tuc.php'),
     'GET /bai-viet' => fn () => $renderCompanyPage('bai-viet.php'),
@@ -166,6 +174,10 @@ $routes = [
 
 if (! array_key_exists($routeKey, $routes)) {
     abort(404, 'Tuyến đường không tồn tại.');
+}
+
+if (request_method() === 'POST' && ! csrf_verify()) {
+    csrf_reject();
 }
 
 $routes[$routeKey]();
